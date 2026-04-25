@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fk_core_design_system_retry_image">Atualizar Imagem</string>
+
+    <string name="fk_core_ds_hello_world">Olá Mundo!</string>
+</resources>

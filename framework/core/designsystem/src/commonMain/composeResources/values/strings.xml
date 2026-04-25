@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fk_core_design_system_retry_image">Retry Image</string>
+
+    <string name="fk_core_ds_hello_world">Hello World</string>
+    <string name="fk_core_ds_name">Hefesto</string>
+
+    <string name="fk_core_ds_preview_title">Preview title</string>
+    <string name="fk_core_ds_preview_welcome">
+        Welcome, %1$s!
+    </string>
+
+    <string name="fk_core_ds_preview_dsl">
+        Built using %1$s
+    </string>
+</resources>

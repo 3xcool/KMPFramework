@@ -1,0 +1,33 @@
+Nav 3 actually already separates concerns in a similar way:
+
+NavKey -> navigation identity
+
+SceneStrategy -> layout decision
+
+NavEntry -> runtime binding
+
+Your DsNavigation design is:
+
+destinationId -> navigation identity
+
+SceneLayout -> layout decision
+
+DsDestinationRegistry -> runtime binding
+
+- Nav Result -> Done
+- Inner Graphs -> Done
+- BackButton -> Done
+- Scoped -> Done
+- Transition -> Done
+- DeepLink -> Done
+- Scene -> Done
+- Use same nav instance while navigation to avoid multiple instances (update navigate function)
+- Make the nav stack public
+- Deeplink for iOS test -> Done
+- Login sample, where we switch the nav entirely
+- Bottom Nav
+
+ToDo
+missing:
+- Shared elements
+- Tests

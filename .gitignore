@@ -1,0 +1,116 @@
+###############################
+# Kotlin / Gradle / CMP
+###############################
+
+*.iml
+.kotlin/
+.gradle/
+build/
+**/build/
+!src/**/build/
+
+local.properties
+.DS_Store
+.idea/
+captures/
+externalNativeBuild/
+.cxx/
+
+# Kotlin Multiplatform cache
+.kmm/
+kotlin-js-store/
+
+###############################
+# Android
+###############################
+
+# Android build cache
+.gradle/
+build/
+**/build/
+
+# Signing
+*.jks
+*.keystore
+*.pem
+
+# Google Services
+google-services.json
+
+###############################
+# iOS / Xcode
+###############################
+
+# User-specific settings
+xcuserdata/
+*.xcuserstate
+
+# Build artifacts
+DerivedData/
+build/
+*.ipa
+*.app
+*.dSYM/
+
+# Workspace data
+*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# Project structure
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+
+# Sensitive
+iosApp/iosApp/GoogleService-Info.plist
+
+###############################
+# Desktop (JVM)
+###############################
+
+out/
+*.jar
+*.war
+*.ear
+
+###############################
+# Node / JS (KMP JS target)
+###############################
+
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+dist/
+package-lock.json
+pnpm-lock.yaml
+
+###############################
+# OS / Editor Junk
+###############################
+
+*.swp
+*.swo
+Thumbs.db
+ehthumbs.db
+*.orig
+
+###############################
+# JetBrains / IntelliJ
+###############################
+
+.idea/
+*.ipr
+*.iws
+
+###############################
+# Misc
+###############################
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
