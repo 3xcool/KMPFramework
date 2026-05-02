@@ -73,6 +73,8 @@ out/
 *.jar
 *.war
 *.ear
+# Allow the Gradle wrapper jar (must be checked in for ./gradlew to work in CI)
+!gradle/wrapper/gradle-wrapper.jar
 
 ###############################
 # Node / JS (KMP JS target)
