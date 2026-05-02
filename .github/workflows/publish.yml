@@ -28,6 +28,11 @@ jobs:
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
       - name: Publish framework modules
+        # --max-workers=1 serializes uploads to GitHub Packages. GitHub Packages refuses
+        # to overwrite immutable release artifacts, and Gradle's automatic retry on transient
+        # network blips can race with parallel uploads, causing 409 Conflict on .md5/.sha files
+        # that were already uploaded by a sibling task. Serializing eliminates the race.
+        # The publishing tasks themselves are I/O bound, so the speed cost is small.
         run: |
           ./gradlew \
             :framework:sdk:publish \
@@ -37,6 +42,7 @@ jobs:
             :framework:core:domain:publish \
             :framework:core:presentation:publish \
             :framework:logger:publish \
+            --max-workers=1 \
             -PframeworkVersion=${{ steps.version.outputs.VERSION }}
         env:
           GITHUB_ACTOR: ${{ github.actor }}
