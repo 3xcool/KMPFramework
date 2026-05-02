@@ -52,9 +52,10 @@ kotlin {
     }
 }
 
-// Make String Res public
+// Make String Res public, with a stable package independent of rootProject.name.
 compose {
     resources {
         publicResClass = true
+        packageOfResClass = "com.tekmoon.kompass.generated.resources"
     }
 }

@@ -24,9 +24,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
-import kmpframework.framework.kompass.generated.resources.Res
-import kmpframework.framework.kompass.generated.resources.ic_arrow_back
-import kmpframework.framework.kompass.generated.resources.ic_edit
+import com.tekmoon.kompass.generated.resources.Res
+import com.tekmoon.kompass.generated.resources.ic_arrow_back
+import com.tekmoon.kompass.generated.resources.ic_edit
 
 /**
  * Format a Double as currency without using String.format()

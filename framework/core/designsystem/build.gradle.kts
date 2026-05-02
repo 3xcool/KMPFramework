@@ -178,9 +178,11 @@ kotlin {
 }
 
 
-// Make String Res public
+// Make String Res public, with a stable package independent of rootProject.name
+// so this artifact's API contract (Res class location) is preserved across consumers.
 compose {
     resources {
         publicResClass = true
+        packageOfResClass = "com.tekmoon.designsystem.generated.resources"
     }
 }

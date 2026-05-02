@@ -35,9 +35,9 @@ import com.tekmoon.designsystem.platform.currentPlatformContext
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import kmpframework.framework.core.designsystem.generated.resources.Res
-import kmpframework.framework.core.designsystem.generated.resources.fk_core_design_system_retry_image
-import kmpframework.framework.core.designsystem.generated.resources.img_error
+import com.tekmoon.designsystem.generated.resources.Res
+import com.tekmoon.designsystem.generated.resources.fk_core_design_system_retry_image
+import com.tekmoon.designsystem.generated.resources.img_error
 import androidx.compose.ui.platform.LocalInspectionMode
 import coil3.ImageLoader
 

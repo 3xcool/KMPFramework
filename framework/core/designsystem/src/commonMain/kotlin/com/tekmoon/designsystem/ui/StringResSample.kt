@@ -5,10 +5,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import kmpframework.framework.core.designsystem.generated.resources.fk_core_ds_preview_dsl
-import kmpframework.framework.core.designsystem.generated.resources.fk_core_ds_preview_items
-import kmpframework.framework.core.designsystem.generated.resources.fk_core_ds_preview_title
-import kmpframework.framework.core.designsystem.generated.resources.fk_core_ds_preview_welcome
+import com.tekmoon.designsystem.generated.resources.fk_core_ds_preview_dsl
+import com.tekmoon.designsystem.generated.resources.fk_core_ds_preview_items
+import com.tekmoon.designsystem.generated.resources.fk_core_ds_preview_title
+import com.tekmoon.designsystem.generated.resources.fk_core_ds_preview_welcome
 
 /* -------------------------------------------------------------------------- */
 /* Compose runtime & UI                                                       */
@@ -29,7 +29,7 @@ import com.tekmoon.designsystem.components.DsText
 /* Compose Multiplatform Preview                                              */
 /* -------------------------------------------------------------------------- */
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kmpframework.framework.core.designsystem.generated.resources.Res
+import com.tekmoon.designsystem.generated.resources.Res
 
 /* -------------------------------------------------------------------------- */
 /* Compose Multiplatform Resources                                            */
@@ -38,7 +38,7 @@ import kmpframework.framework.core.designsystem.generated.resources.Res
 /* -------------------------------------------------------------------------- */
 /* UiText infra                                                               */
 /* -------------------------------------------------------------------------- */
-import kmpframework.framework.core.designsystem.generated.resources.fk_core_ds_name
+import com.tekmoon.designsystem.generated.resources.fk_core_ds_name
 
 /**
  * To create String res

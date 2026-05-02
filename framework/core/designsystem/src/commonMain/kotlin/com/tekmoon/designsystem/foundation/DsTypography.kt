@@ -9,9 +9,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import kmpframework.framework.core.designsystem.generated.resources.Res
-import kmpframework.framework.core.designsystem.generated.resources.inter_bold
-import kmpframework.framework.core.designsystem.generated.resources.inter_regular
+import com.tekmoon.designsystem.generated.resources.Res
+import com.tekmoon.designsystem.generated.resources.inter_bold
+import com.tekmoon.designsystem.generated.resources.inter_regular
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 

@@ -32,8 +32,8 @@ import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageDefaults
 import com.tekmoon.designsystem.image.DsImageLocal
 import com.tekmoon.designsystem.image.DsImageSource
-import kmpframework.framework.core.designsystem.generated.resources.Res
-import kmpframework.framework.core.designsystem.generated.resources.dog_man_image
+import com.tekmoon.designsystem.generated.resources.Res
+import com.tekmoon.designsystem.generated.resources.dog_man_image
 
 
 @Composable

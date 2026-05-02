@@ -12,9 +12,9 @@ import com.tekmoon.designsystem.components.DsDialogWeb
 import com.tekmoon.designsystem.image.DsImageSource
 import com.tekmoon.designsystem.image.LocalDsImageLoader
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kmpframework.framework.core.designsystem.generated.resources.Res
-import kmpframework.framework.core.designsystem.generated.resources.dog_man_image
-import kmpframework.framework.core.designsystem.generated.resources.ic_outline_check_24
+import com.tekmoon.designsystem.generated.resources.Res
+import com.tekmoon.designsystem.generated.resources.dog_man_image
+import com.tekmoon.designsystem.generated.resources.ic_outline_check_24
 
 @Preview(
     group = "DsDialogPreview",

@@ -16,8 +16,8 @@ import com.tekmoon.designsystem.image.DsImageSource
 import com.tekmoon.designsystem.image.LocalDsImageLoader
 import com.tekmoon.designsystem.platform.currentPlatformContext
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kmpframework.framework.core.designsystem.generated.resources.Res
-import kmpframework.framework.core.designsystem.generated.resources.dog_man_image
+import com.tekmoon.designsystem.generated.resources.Res
+import com.tekmoon.designsystem.generated.resources.dog_man_image
 
 // Unfortunately CMP Previews doesn't show the real image =/
 

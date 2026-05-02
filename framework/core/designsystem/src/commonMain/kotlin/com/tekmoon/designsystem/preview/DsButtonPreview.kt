@@ -14,8 +14,8 @@ import com.tekmoon.designsystem.components.DsButtonSize
 import com.tekmoon.designsystem.components.DsButtonVariant
 import com.tekmoon.designsystem.image.DsImageSource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kmpframework.framework.core.designsystem.generated.resources.Res
-import kmpframework.framework.core.designsystem.generated.resources.ic_outline_check_24
+import com.tekmoon.designsystem.generated.resources.Res
+import com.tekmoon.designsystem.generated.resources.ic_outline_check_24
 
 
 @Preview(showBackground = true)

@@ -19,9 +19,9 @@ import com.tekmoon.designsystem.components.DsTextField
 import com.tekmoon.designsystem.components.DsTextFieldVariant
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
-import kmpframework.framework.core.designsystem.generated.resources.Res
-import kmpframework.framework.core.designsystem.generated.resources.dog_man_image
-import kmpframework.framework.core.designsystem.generated.resources.ic_outline_check_24
+import com.tekmoon.designsystem.generated.resources.Res
+import com.tekmoon.designsystem.generated.resources.dog_man_image
+import com.tekmoon.designsystem.generated.resources.ic_outline_check_24
 
 @Composable
 fun DsPreviewCatalog() {
