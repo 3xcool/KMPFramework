@@ -41,12 +41,3 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish convention plugins
-        run: |
-          cd build-logic
-          ./gradlew :convention:publish \
-            -PframeworkVersion=${{ steps.version.outputs.VERSION }}
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
