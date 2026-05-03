@@ -11,6 +11,7 @@ kotlin {
             api(projects.framework.core.data)
             api(projects.framework.core.domain)
             api(projects.framework.core.presentation)
+            api(projects.framework.core.utils)
             api(projects.framework.kompass)
             api(projects.framework.logger)
         }
