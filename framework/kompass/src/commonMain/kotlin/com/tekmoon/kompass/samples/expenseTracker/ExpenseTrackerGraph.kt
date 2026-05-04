@@ -22,7 +22,6 @@ import com.tekmoon.kompass.samples.FadeGraphTransition
 import com.tekmoon.kompass.util.BackPressedChannel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import com.tekmoon.kompass.generated.resources.Res
 import com.tekmoon.kompass.generated.resources.ic_arrow_back
@@ -58,12 +57,29 @@ data class Expense(
 )
 
 
-private enum class ExpenseTrackerDest : Destination {
-    ClientsList,
-    ClientDetail,
-    ExpenseDetail;
+/* -------------------------------------------
+ * Destinations
+ *
+ * ClientsList is parameterless (plain Destination); ClientDetail and
+ * ExpenseDetail carry typed args, so their navigation use the typed API
+ * (navController.navigateTo / requireArgs) and avoid manual Json.* calls.
+ * ------------------------------------------- */
 
-    override val id: String get() = "kompass/expensetracker/$name"
+private sealed interface ExpenseTrackerDest : Destination {
+
+    data object ClientsList : ExpenseTrackerDest {
+        override val id: String = "kompass/expensetracker/ClientsList"
+    }
+
+    data object ClientDetail : ExpenseTrackerDest, TypedDestination<ClientDetailArgs> {
+        override val id: String = "kompass/expensetracker/ClientDetail"
+        override val argsSerializer = ClientDetailArgs.serializer()
+    }
+
+    data object ExpenseDetail : ExpenseTrackerDest, TypedDestination<ExpenseDetailArgs> {
+        override val id: String = "kompass/expensetracker/ExpenseDetail"
+        override val argsSerializer = ExpenseDetailArgs.serializer()
+    }
 }
 
 @Serializable
@@ -158,13 +174,20 @@ object ExpenseTrackerGraph : NavigationGraph {
     )
 
     override fun canResolveDestination(destinationId: String): Boolean =
-        ExpenseTrackerDest.entries.any { it.id == destinationId }
+        destinationId == ExpenseTrackerDest.ClientsList.id ||
+                destinationId == ExpenseTrackerDest.ClientDetail.id ||
+                destinationId == ExpenseTrackerDest.ExpenseDetail.id
 
     override fun resolveDestination(
         destinationId: String,
         args: String?
     ): Destination =
-        ExpenseTrackerDest.entries.first { it.id == destinationId }
+        when (destinationId) {
+            ExpenseTrackerDest.ClientsList.id -> ExpenseTrackerDest.ClientsList
+            ExpenseTrackerDest.ClientDetail.id -> ExpenseTrackerDest.ClientDetail
+            ExpenseTrackerDest.ExpenseDetail.id -> ExpenseTrackerDest.ExpenseDetail
+            else -> error("Unknown ExpenseTracker destination: $destinationId")
+        }
 
     @Composable
     override fun Content(
@@ -249,13 +272,10 @@ private fun ClientsListScreen(navController: NavController) {
                 ClientCard(
                     client = client,
                     onClick = {
-                        navController.navigate(
-                            entry = ExpenseTrackerDest.ClientDetail.toBackStackEntry(
-                                args = Json.encodeToString(
-                                    ClientDetailArgs(client.id)
-                                ),
-                                scopeId = newScope()
-                            )
+                        navController.navigateTo(
+                            destination = ExpenseTrackerDest.ClientDetail,
+                            args = ClientDetailArgs(client.id),
+                            scopeId = newScope()
                         )
                     }
                 )
@@ -319,12 +339,10 @@ private fun ClientDetailScreen(
     entry: BackStackEntry,
     navController: NavController
 ) {
-    val args = entry.args?.let {
-        Json.decodeFromString<ClientDetailArgs>(it)
-    }
+    val args = navController.requireArgs(ExpenseTrackerDest.ClientDetail, entry)
 
     val client = remember {
-        MockData.clients.find { it.id == args?.clientId }
+        MockData.clients.find { it.id == args.clientId }
             ?: MockData.clients.first()
     }
 
@@ -380,13 +398,10 @@ private fun ClientDetailScreen(
                 ExpenseListItem(
                     expense = expense,
                     onClick = {
-                        navController.navigate(
-                            entry = ExpenseTrackerDest.ExpenseDetail.toBackStackEntry(
-                                args = Json.encodeToString(
-                                    ExpenseDetailArgs(expense.id, client.id)
-                                ),
-                                scopeId = newScope()
-                            )
+                        navController.navigateTo(
+                            destination = ExpenseTrackerDest.ExpenseDetail,
+                            args = ExpenseDetailArgs(expense.id, client.id),
+                            scopeId = newScope()
                         )
                     }
                 )
@@ -501,17 +516,15 @@ private fun ExpenseDetailScreen(
     entry: BackStackEntry,
     navController: NavController
 ) {
-    val args = entry.args?.let {
-        Json.decodeFromString<ExpenseDetailArgs>(it)
-    }
+    val args = navController.requireArgs(ExpenseTrackerDest.ExpenseDetail, entry)
 
     val client = remember {
-        MockData.clients.find { it.id == args?.clientId }
+        MockData.clients.find { it.id == args.clientId }
             ?: MockData.clients.first()
     }
 
     val expense = remember {
-        MockData.getExpensesForClient(client.id).find { it.id == args?.expenseId }
+        MockData.getExpensesForClient(client.id).find { it.id == args.expenseId }
             ?: Expense("", "Unknown", 0.0, "", "")
     }
 
