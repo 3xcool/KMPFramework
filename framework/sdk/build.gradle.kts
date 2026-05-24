@@ -12,6 +12,9 @@ kotlin {
             api(projects.framework.core.domain)
             api(projects.framework.core.presentation)
             api(projects.framework.core.utils)
+            api(projects.framework.core.session)
+            api(projects.framework.core.permissions)
+            api(projects.framework.core.media)
             api(projects.framework.kompass)
             api(projects.framework.logger)
         }

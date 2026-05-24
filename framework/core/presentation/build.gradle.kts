@@ -10,14 +10,18 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(projects.framework.core.domain)
-                implementation(projects.framework.logger)
+                implementation(projects.framework.core.utils)
+                api(projects.framework.logger)
                 implementation(projects.framework.core.designsystem)
 
                 implementation(libs.kotlin.stdlib)
                 // Add KMP dependencies here
 
+                implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.material3.adaptive)
                 implementation(libs.kotlinx.collections.immutable)
+
+                api(libs.jetbrains.lifecycle.viewmodel)
 
                 implementation(compose.components.uiToolingPreview)
 
