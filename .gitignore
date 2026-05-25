@@ -116,3 +116,15 @@ ehthumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+###############################
+# Claude / local agent
+###############################
+
+.claude/
+
+###############################
+# Local-only scripts
+###############################
+
+docs/commit-plan.sh

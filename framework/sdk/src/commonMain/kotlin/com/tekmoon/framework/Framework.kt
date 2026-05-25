@@ -11,6 +11,7 @@ import com.tekmoon.logger.domain.LoggerConfig
 import com.tekmoon.utilities.DispatcherProvider
 import com.tekmoon.utilities.StandardDispatchers
 import io.ktor.client.HttpClient
+import kotlin.concurrent.Volatile
 
 /**
  * Tekmoon KMP Framework umbrella module.

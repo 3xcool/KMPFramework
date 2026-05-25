@@ -30,7 +30,7 @@ import platform.posix.memcpy
 actual suspend fun loadImageBitmap(source: ImageSource, context: Any?): ImageBitmap? =
     withContext(Dispatchers.Default) {
         try {
-            val bytes: ByteArray? = when (source) {
+            val bytes: ByteArray = when (source) {
                 is ImageSource.Bytes -> source.value
                 is ImageSource.Url -> {
                     val url = NSURL.URLWithString(source.value) ?: return@withContext null
