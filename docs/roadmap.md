@@ -37,7 +37,7 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 
 ### Data (`core/data`)
 - ✅ SQLDelight wiring — `DatabaseDriverFactory` expect/actual (Android `AndroidSqliteDriver`, iOS `NativeSqliteDriver`, JVM `JdbcSqliteDriver` → `java.io.tmpdir`). `FlowQuery` extensions (`asFlowList`, `asFlowOne`, `asFlowOneOrNull`). `InstantColumnAdapter`, `LocalDateColumnAdapter`, `LocalDateTimeColumnAdapter`. `SqlDelightConventionPlugin` registered in build-logic. Schema files are intentionally client-owned — framework is driver-only.
-- ⏳ Typed WebSocket client wrapper (plugin already installed; needs a `RealtimeClient` abstraction).
+- ✅ Typed WebSocket client wrapper — `RealtimeClient<Event>` interface + `RealtimeClientImpl` (Ktor-backed). `RealtimeConfig<Event>` with pluggable `ReconnectPolicy` (ExponentialBackoff / Fixed / Custom / Never), `TokenDelivery` (QueryParam / Header / Custom), `ConnectionState` flow, typed `events: SharedFlow<Event>`, `FakeRealtimeClient` test double. `ktor-client-websockets` added to version catalog.
 - ✅ HTTP interceptor for auth header injection + retry, plumbed through `HttpClientFactory`. `TokenProvider` interface, `TokenGate` (single-flight mutex with snapshot-before-wait thundering-herd protection), `AuthEvent.SessionExpired` via `SharedFlow`, `NoAuth` opt-out attribute.
 
 ### Session (`core/session`)

@@ -122,6 +122,7 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
+ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 # DataStore
@@ -249,7 +250,8 @@ ktor-common = [
     "ktor-client-content-negotiation",
     "ktor-serialization-kotlinx-json",
     "ktor-client-auth",
-    "ktor-client-logging"
+    "ktor-client-logging",
+    "ktor-client-websockets"
 ]
 
 android-preview-support = [
