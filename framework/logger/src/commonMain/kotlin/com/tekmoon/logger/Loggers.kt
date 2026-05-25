@@ -1,5 +1,7 @@
 package com.tekmoon.logger
 
+import kotlin.concurrent.Volatile
+
 /**
  * Process-wide [ShowMeLoggerK] handle, populated by `Framework.start(...)`.
  *
