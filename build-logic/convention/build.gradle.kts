@@ -30,6 +30,7 @@ dependencies {
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.androidx.room.gradle.plugin)
+    compileOnly(libs.sqldelight.gradle.plugin)
     implementation(libs.buildkonfig.gradlePlugin)
     implementation(libs.buildkonfig.compiler)
 }
@@ -85,6 +86,10 @@ gradlePlugin {
         register("room") {
             id = "com.tekmoon.convention.room"
             implementationClass = "RoomConventionPlugin"
+        }
+        register("sqldelight") {
+            id = "com.tekmoon.convention.sqldelight"
+            implementationClass = "SqlDelightConventionPlugin"
         }
         register("kmpAndroidTest") {
             id = "com.tekmoon.convention.kmp.android.test"
