@@ -17,6 +17,8 @@ kotlin {
             api(projects.framework.core.media)
             api(projects.framework.kompass)
             api(projects.framework.logger)
+
+            api(libs.ktor.client.core)
         }
     }
 }
