@@ -1,6 +1,7 @@
 package com.tekmoon.domain.util.paging
 
 import com.tekmoon.domain.util.data.DataError
+import com.tekmoon.domain.util.data.NoInternet
 import com.tekmoon.domain.util.data.Result
 
 // ---------------------------------------------------------------------------
@@ -24,7 +25,7 @@ data class TestItem(
  * @param remotePages        Map of 1-based page number → page items. Missing pages return [].
  * @param loadPolicy         Policy under test.
  * @param pageSize           Page size (mirrors what [PagingConfig] uses).
- * @param shouldFailRemote   When `true`, [loadRemotePage] returns [DataError.Remote.NO_INTERNET].
+ * @param shouldFailRemote   When `true`, [loadRemotePage] returns [NoInternet].
  */
 class FakePagingSource(
     initialLocalItems: List<TestItem> = emptyList(),
@@ -48,10 +49,10 @@ class FakePagingSource(
     val savedItems = mutableListOf<TestItem>()
     var clearLocalCalled = false; private set
 
-    override suspend fun loadRemotePage(page: Int, pageSize: Int): Result<List<TestItem>, DataError.Remote> {
+    override suspend fun loadRemotePage(page: Int, pageSize: Int): Result<List<TestItem>, DataError> {
         loadRemoteCallCount++
         return if (shouldFailRemote) {
-            Result.Failure(DataError.Remote.NO_INTERNET)
+            Result.Failure(NoInternet)
         } else {
             Result.Success(remotePages[page] ?: emptyList())
         }

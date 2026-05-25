@@ -61,7 +61,7 @@ interface PagingSource<T, K> {
      * @return [Result.Success] with the page items, or [Result.Failure] with a [DataError.Remote].
      *         An empty list signals the last page.
      */
-    suspend fun loadRemotePage(page: Int, pageSize: Int): Result<List<T>, DataError.Remote>
+    suspend fun loadRemotePage(page: Int, pageSize: Int): Result<List<T>, DataError>
 
     /**
      * Returns a snapshot of all currently cached items from the local store.

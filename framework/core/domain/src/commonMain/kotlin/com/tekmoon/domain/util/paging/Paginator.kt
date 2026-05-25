@@ -435,7 +435,7 @@ class Paginator<T, K>(
         page: Int,
         existingItems: List<PagingItem<T>>,
         onSuccess: suspend (merged: List<PagingItem<T>>, hasMore: Boolean) -> Unit,
-        onFailure: suspend (DataError.Remote) -> Unit,
+        onFailure: suspend (DataError) -> Unit,
     ) {
         val pageSize = source.config.pageSize
         when (val result = source.loadRemotePage(page, pageSize)) {
