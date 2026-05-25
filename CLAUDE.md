@@ -54,10 +54,13 @@ Feature branches ALWAYS start from `develop`, never from `main`.
 Before writing any code, isolate your work in its own git worktree on a new feature branch, created from an up-to-date `develop`:
 
 1. Make sure `develop` is current: `git fetch && git switch develop && git pull`
-2. Create the worktree + feature branch from develop. Use a short, descriptive, kebab-case name based on the task:
-   `git worktree add ../soccos-<task-name> -b feature/<task-name> develop`
-3. Do ALL of your work inside that worktree directory. Do not edit files in the main checkout.
-4. State clearly which worktree path and which branch you created.
+2. Prune any stale worktree references from previous sessions:
+   `git worktree prune --expire=now`
+3. Create the worktree + feature branch from develop. Use a short, descriptive, kebab-case name based on the task.
+   **ALWAYS use the absolute path on the user's real filesystem** — never a relative path, never a path inside a Cowork session directory (those are ephemeral and vanish when the session ends, leaving stale locks):
+   `git worktree add ~/Desktop/Andre/Apps/KMP/KMPFramework-<task-name> -b feature/<task-name> develop`
+4. Do ALL of your work inside that worktree directory. Do not edit files in the main checkout.
+5. State clearly which worktree path and which branch you created.
 
 If you are already running inside an isolated worktree (started with `--worktree`), still make sure your branch is `feature/<task-name>` and was based on `develop`; rename/rebase if needed, and tell me what you did.
 
@@ -100,7 +103,7 @@ When done (or stuck), summarize:
 **After merge into `develop`** (whether you ran the merge or I did) — clean up the worktree as part of the wrap-up, then run branch hygiene (see below):
 
 ```sh
-git worktree remove ../<worktree-name>
+git worktree remove ~/Desktop/Andre/Apps/KMP/KMPFramework-<task-name>
 ```
 
 The feature branch ref stays after the worktree is removed; branch hygiene below decides when it gets deleted.
