@@ -35,7 +35,7 @@ actual fun PermissionsScreen(
     val latestOnGranted = rememberUpdatedState(onAllPermissionsGranted)
 
     LaunchedEffect(viewModel) {
-        viewModel.events.collect { event ->
+        viewModel.uiEvents.collect { event ->
             when (event) {
                 PermissionsEvent.Granted -> latestOnGranted.value()
                 PermissionsEvent.Denied -> latestOnDenied.value()

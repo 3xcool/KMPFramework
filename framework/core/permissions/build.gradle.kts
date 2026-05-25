@@ -9,7 +9,9 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(projects.framework.core.utils)
-                implementation(projects.framework.logger)
+                api(projects.framework.core.presentation)
+                api(projects.framework.logger)
+                implementation(projects.framework.core.designsystem)
 
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.coroutines.core)
@@ -19,6 +21,7 @@ kotlin {
 
                 implementation(compose.runtime)
                 implementation(compose.foundation)
+                implementation(compose.material3)
             }
         }
 

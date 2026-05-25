@@ -1,5 +1,7 @@
 package com.tekmoon.session
 
+import com.tekmoon.utilities.DispatcherProvider
+import com.tekmoon.utilities.StandardDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -39,7 +41,8 @@ class DataSessionImpl<Model : Any>(
     private val draftStore: DraftStore<Model>,
     private val savedStateStore: SavedStateStore,
     private val json: Json,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob()),
+    dispatchers: DispatcherProvider = StandardDispatchers,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + dispatchers.mainImmediate),
 ) : DataSession<Model> {
 
     private val _state = MutableStateFlow(DataSessionState<Model>())

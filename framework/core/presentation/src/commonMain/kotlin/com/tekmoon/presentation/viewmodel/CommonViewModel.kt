@@ -2,6 +2,7 @@ package com.tekmoon.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tekmoon.logger.Loggers
 import com.tekmoon.logger.ShowMeLoggerK
 import com.tekmoon.utilities.DispatcherProvider
 import com.tekmoon.utilities.StandardDispatchers
@@ -39,13 +40,12 @@ abstract class CommonViewModel<Action : Any, Event : Any, State : Any>(
     extraBufferCapacity: Int = 64,
     onBufferOverflow: BufferOverflow = BufferOverflow.DROP_OLDEST,
     protected val dispatchers: DispatcherProvider = StandardDispatchers,
-    protected val logger: ShowMeLoggerK? = null,
+    protected val logger: ShowMeLoggerK? = Loggers.current,
 ) : ViewModel() {
 
     private val exceptionHandler = CoroutineExceptionHandler { ctx, t ->
         val name = ctx[CoroutineName]?.name ?: "no-name"
         logger?.e("Coroutine error [$name] -> ${t.stackTraceToString()}")
-            ?: println("Coroutine error [$name] -> ${t.stackTraceToString()}")
     }
 
     protected val scope: CoroutineScope = viewModelScope
@@ -103,7 +103,6 @@ abstract class CommonViewModel<Action : Any, Event : Any, State : Any>(
             block()
         } catch (throwable: Throwable) {
             logger?.e("Exception in ${this::class.simpleName} -> ${throwable.stackTraceToString()}")
-                ?: println("Exception in ${this::class.simpleName} -> ${throwable.stackTraceToString()}")
         }
     }
 }

@@ -1,18 +1,22 @@
 package com.tekmoon.permissions
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.tekmoon.logger.Loggers
 import com.tekmoon.logger.ShowMeLoggerK
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import com.tekmoon.presentation.viewmodel.CommonViewModel
+import com.tekmoon.utilities.DispatcherProvider
+import com.tekmoon.utilities.StandardDispatchers
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+
+sealed interface PermissionsAction {
+    data class Check(val autoRequest: Boolean = false) : PermissionsAction
+    data class RequestOne(val permission: PermissionType) : PermissionsAction
+    data object RequestAll : PermissionsAction
+    data object OpenSettings : PermissionsAction
+    data object ResetAlreadyRequestedFlags : PermissionsAction
+}
 
 sealed interface PermissionsEvent {
     data object Granted : PermissionsEvent
@@ -24,30 +28,43 @@ sealed interface PermissionsEvent {
 class PermissionsViewModel(
     private val controller: PermissionsController,
     private val requiredPermissions: List<PermissionType>,
-    private val logger: ShowMeLoggerK? = null,
-) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(PermissionsUiState())
-    val uiState = _uiState.asStateFlow()
-
-    private val _events = Channel<PermissionsEvent>(Channel.BUFFERED)
-    val events = _events.receiveAsFlow()
+    dispatchers: DispatcherProvider = StandardDispatchers,
+    logger: ShowMeLoggerK? = Loggers.current,
+) : CommonViewModel<PermissionsAction, PermissionsEvent, PermissionsUiState>(
+    dispatchers = dispatchers,
+    logger = logger,
+) {
 
     private var awaitingSettingsReturn: Boolean = false
     private var lastOutcomeEmitted: PermissionsEvent? = null
 
-    init {
+    override fun initialState(): PermissionsUiState = PermissionsUiState()
+
+    override suspend fun setup() {
+        // Kick off the first read of the system state.
         checkPermissions()
     }
 
+    override fun onAction(action: PermissionsAction) {
+        when (action) {
+            is PermissionsAction.Check -> checkPermissions(action.autoRequest)
+            is PermissionsAction.RequestOne -> requestPermission(action.permission)
+            PermissionsAction.RequestAll -> requestAllPermissions()
+            PermissionsAction.OpenSettings -> openSettings()
+            PermissionsAction.ResetAlreadyRequestedFlags -> resetAlreadyRequestedFlags()
+        }
+    }
+
+    // ---------- Public convenience entry points (also accessible via onAction). ----------
+
     fun checkPermissions(autoRequest: Boolean = false) {
-        viewModelScope.launch {
+        launch(name = "checkPermissions") {
             val permissionStatuses = buildPermissionStatusesPreservingAlreadyRequested()
             val allGranted = permissionStatuses.values
                 .filter { it.isRequired }
                 .all { it.state == PermissionState.GRANTED }
 
-            _uiState.update { prev ->
+            updateState { prev ->
                 prev.copy(
                     permissions = permissionStatuses,
                     allRequiredGranted = allGranted,
@@ -69,7 +86,7 @@ class PermissionsViewModel(
 
     fun resetAlreadyRequestedFlags() {
         awaitingSettingsReturn = false
-        _uiState.update { state ->
+        updateState { state ->
             state.copy(
                 permissions = state.permissions.mapValues { (_, v) ->
                     v.copy(isAlreadyRequested = false)
@@ -79,21 +96,21 @@ class PermissionsViewModel(
     }
 
     fun requestPermission(permission: PermissionType) {
-        viewModelScope.launch {
+        launch(name = "requestPermission") {
             try {
                 markAlreadyRequested(permission)
 
-                _uiState.update { it.copy(isRequestingPermissions = true) }
+                updateState { it.copy(isRequestingPermissions = true) }
                 val resultState = controller.requestPermission(permission)
                 updatePermissionState(permission, resultState)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                logger?.e("requestPermission failed -> ${e.stackTraceToString()}")
+                logSafe { "requestPermission failed -> ${e.stackTraceToString()}" }
             } finally {
-                _uiState.update { it.copy(isRequestingPermissions = false) }
-                if (!awaitingSettingsReturn) {
-                    emitOutcome(_uiState.value.allRequiredGranted)
+                updateState { it.copy(isRequestingPermissions = false) }
+                withState { state ->
+                    if (!awaitingSettingsReturn) emitOutcome(state.allRequiredGranted)
                 }
             }
         }
@@ -107,12 +124,12 @@ class PermissionsViewModel(
      *   in that case we defer until the next checkPermissions after return).
      */
     fun requestAllPermissions() {
-        viewModelScope.launch {
+        launch(name = "requestAllPermissions") {
             try {
-                _uiState.update { it.copy(isRequestingPermissions = true) }
+                updateState { it.copy(isRequestingPermissions = true) }
 
                 for (permission in requiredPermissions) {
-                    val permissionStatus = _uiState.value.permissions[permission]
+                    val permissionStatus = state.value.permissions[permission]
                     val current = permissionStatus?.state ?: PermissionState.NOT_DETERMINED
                     val alreadyRequested = permissionStatus?.isAlreadyRequested == true
 
@@ -141,8 +158,8 @@ class PermissionsViewModel(
                             updatePermissionState(permission, resultState)
 
                             if (elapsedMs < 200) {
-                                val state = _uiState.value.permissions[permission]?.state
-                                if (state == PermissionState.DENIED_ALWAYS) {
+                                val stateNow = state.value.permissions[permission]?.state
+                                if (stateNow == PermissionState.DENIED_ALWAYS) {
                                     openSettings()
                                 }
                             }
@@ -152,14 +169,15 @@ class PermissionsViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                logger?.e("requestAllPermissions failed -> ${e.stackTraceToString()}")
+                logSafe { "requestAllPermissions failed -> ${e.stackTraceToString()}" }
             } finally {
-                _uiState.update { it.copy(isRequestingPermissions = false) }
-
-                if (!awaitingSettingsReturn) {
-                    emitOutcome(_uiState.value.allRequiredGranted)
-                } else {
-                    logger?.d("Request finished but awaiting settings return -> defer outcome")
+                updateState { it.copy(isRequestingPermissions = false) }
+                withState { state ->
+                    if (!awaitingSettingsReturn) {
+                        emitOutcome(state.allRequiredGranted)
+                    } else {
+                        logSafe { "Request finished but awaiting settings return -> defer outcome" }
+                    }
                 }
             }
         }
@@ -168,26 +186,24 @@ class PermissionsViewModel(
     fun openSettings() {
         awaitingSettingsReturn = true
         lastOutcomeEmitted = null
-        _events.trySend(PermissionsEvent.OpenedSettings)
+        emit(PermissionsEvent.OpenedSettings)
         controller.openAppSettings()
     }
 
-    // -----------------------------
-    // Internal helpers
-    // -----------------------------
+    // ---------- Internal helpers ----------
 
     private fun emitOutcome(allGranted: Boolean) {
         val event = if (allGranted) PermissionsEvent.Granted else PermissionsEvent.Denied
         if (lastOutcomeEmitted == event) return
         lastOutcomeEmitted = event
-        _events.trySend(event)
+        emit(event)
     }
 
     private suspend fun buildPermissionStatusesPreservingAlreadyRequested(): Map<PermissionType, PermissionStatus> {
         val permissionStatuses = mutableMapOf<PermissionType, PermissionStatus>()
         requiredPermissions.forEach { p ->
             val state = controller.getPermissionState(p)
-            val prev = _uiState.value.permissions[p]
+            val prev = this.state.value.permissions[p]
             permissionStatuses[p] = PermissionStatus(
                 permission = p,
                 state = state,
@@ -199,7 +215,7 @@ class PermissionsViewModel(
     }
 
     private fun markAlreadyRequested(permission: PermissionType) {
-        _uiState.update { state ->
+        updateState { state ->
             val updated = state.permissions.toMutableMap()
             val existing = updated[permission]
             if (existing != null && !existing.isAlreadyRequested) {
@@ -216,13 +232,13 @@ class PermissionsViewModel(
         }
     }
 
-    private fun updatePermissionState(permission: PermissionType, state: PermissionState) {
-        val updated = _uiState.value.permissions.toMutableMap()
+    private fun updatePermissionState(permission: PermissionType, newState: PermissionState) {
+        val updated = state.value.permissions.toMutableMap()
 
         val existing = updated[permission]
-        updated[permission] = (existing ?: PermissionStatus(permission, state, isRequired = true))
+        updated[permission] = (existing ?: PermissionStatus(permission, newState, isRequired = true))
             .copy(
-                state = state,
+                state = newState,
                 isAlreadyRequested = existing?.isAlreadyRequested ?: false,
             )
 
@@ -230,12 +246,16 @@ class PermissionsViewModel(
             .filter { it.isRequired }
             .all { it.state == PermissionState.GRANTED }
 
-        _uiState.update { prev ->
+        updateState { prev ->
             prev.copy(
                 permissions = updated,
                 allRequiredGranted = allGranted,
                 updateTrigger = Clock.System.now().toEpochMilliseconds(),
             )
         }
+    }
+
+    private inline fun logSafe(crossinline message: () -> String) {
+        logger?.d(message())
     }
 }
