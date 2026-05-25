@@ -49,22 +49,15 @@ This repo uses Git Flow with three kinds of branches:
 
 Feature branches ALWAYS start from `develop`, never from `main`.
 
-### Starting a task — create an isolated worktree
+### Starting a task — create a feature branch
 
-Before writing any code, isolate your work in its own git worktree on a new feature branch, created from an up-to-date `develop`:
+Before writing any code, create a feature branch from an up-to-date `develop`:
 
 1. Make sure `develop` is current: `git fetch && git switch develop && git pull`
-2. Prune any stale worktree references from previous sessions:
-   `git worktree prune --expire=now`
-3. Create the worktree + feature branch from develop. Use a short, descriptive, kebab-case name based on the task.
-   **ALWAYS use the absolute path on the user's real filesystem** — never a relative path, never a path inside a Cowork session directory (those are ephemeral and vanish when the session ends, leaving stale locks):
-   `git worktree add ~/Desktop/Andre/Apps/KMP/KMPFramework-<task-name> -b feature/<task-name> develop`
-4. Do ALL of your work inside that worktree directory. Do not edit files in the main checkout.
-5. State clearly which worktree path and which branch you created.
-
-If you are already running inside an isolated worktree (started with `--worktree`), still make sure your branch is `feature/<task-name>` and was based on `develop`; rename/rebase if needed, and tell me what you did.
-
-The repo-root `.worktreeinclude` file lists local-only / gitignored files (e.g. `local.properties`, `keystore.properties`, `.claude/settings.local.json`) that must be copied into each new worktree so Gradle and tooling work out of the box. Worktree-creation scripts read it; do not edit it as part of a feature unless the task asks.
+2. Create and switch to a new feature branch. Use a short, descriptive, kebab-case name based on the task:
+   `git switch -c feature/<task-name>`
+3. Do ALL of your work on this branch inside the main checkout (`~/Desktop/Andre/Apps/KMP/KMPFramework`).
+4. State clearly which branch you created.
 
 ### Working — commit discipline
 
@@ -93,20 +86,14 @@ The repo-root `.worktreeinclude` file lists local-only / gitignored files (e.g. 
 
 When done (or stuck), summarize:
 
-- which worktree path and feature branch you used,
+- which feature branch you used,
 - what you did and which commits you made (with their messages),
 - compile/test status,
 - what is left and every assumption you made.
 
-**Before merge** — I will review the feature branch and decide whether it merges into `develop`. Do NOT clean up the worktree yourself yet — leave it intact so I can review it.
+**Before merge** — I will review the feature branch and decide whether it merges into `develop`.
 
-**After merge into `develop`** (whether you ran the merge or I did) — clean up the worktree as part of the wrap-up, then run branch hygiene (see below):
-
-```sh
-git worktree remove ~/Desktop/Andre/Apps/KMP/KMPFramework-<task-name>
-```
-
-The feature branch ref stays after the worktree is removed; branch hygiene below decides when it gets deleted.
+**After merge into `develop`** — run branch hygiene (see below).
 
 ### Branch hygiene — pruning merged feature branches
 
