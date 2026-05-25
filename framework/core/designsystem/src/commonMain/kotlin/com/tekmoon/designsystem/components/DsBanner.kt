@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -163,21 +164,30 @@ fun DsBanner(
                 horizontalArrangement = Arrangement.End,
             ) {
                 if (secondaryAction != null) {
+                    // Text-variant secondary uses the banner's accent color so it stays in
+                    // the same color family as the surrounding tint — better readability
+                    // than the theme's default secondary text color, which can wash out
+                    // against a tinted background.
                     DsButton(
                         text = secondaryAction.label,
                         onClick = secondaryAction.onClick,
                         variant = DsButtonVariant.Text,
-                        intent = DsButtonIntent.Secondary,
                         size = DsButtonSize.Small,
+                        contentColor = colors.accent,
                     )
                     Spacer(Modifier.width(DsTheme.spacing.sm))
                 }
+                // Primary uses the banner's accent as the solid background with a
+                // forced light/dark contrast-aware text color, instead of the theme's
+                // global primary (which is blue regardless of banner type and clashes
+                // visually on Warning/Success).
                 DsButton(
                     text = primaryAction.label,
                     onClick = primaryAction.onClick,
                     variant = DsButtonVariant.Solid,
-                    intent = primaryAction.toIntent(type),
                     size = DsButtonSize.Small,
+                    backgroundColor = colors.accent,
+                    contentColor = colors.onAccent,
                 )
             }
         }
@@ -188,6 +198,7 @@ fun DsBanner(
 
 private data class BannerColors(
     val accent: Color,
+    val onAccent: Color,
     val background: Color,
     val content: Color,
 )
@@ -200,16 +211,14 @@ private fun resolveBannerColors(type: DsBannerType): BannerColors {
         DsBannerType.Warning -> DsTheme.colors.warning
         DsBannerType.Danger  -> DsTheme.colors.danger
     }
+    // Pick black or white text against the accent based on perceptual luminance —
+    // the Warning hue is light enough that white text falls below AA contrast.
+    val onAccent = if (accent.luminance() > 0.5f) Color.Black else Color.White
     return BannerColors(
         accent     = accent,
+        onAccent   = onAccent,
         // Stronger tint than DsAlert (0.15) — banners need more visual weight.
         background = accent.copy(alpha = 0.20f),
         content    = DsTheme.textColors.primary,
     )
 }
-
-private fun DsBannerAction.toIntent(type: DsBannerType): DsButtonIntent =
-    when (type) {
-        DsBannerType.Danger -> DsButtonIntent.Destructive
-        else                -> DsButtonIntent.Primary
-    }
