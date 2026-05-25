@@ -1,7 +1,11 @@
 package com.tekmoon.data.networking
 
+import com.tekmoon.domain.util.data.ClientError
 import com.tekmoon.domain.util.data.DataError
+import com.tekmoon.domain.util.data.NoInternet
 import com.tekmoon.domain.util.data.Result
+import com.tekmoon.domain.util.data.Serialization
+import com.tekmoon.domain.util.data.UnknownError
 import io.ktor.client.engine.darwin.DarwinHttpRequestException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.statement.HttpResponse
@@ -22,30 +26,29 @@ import kotlin.coroutines.coroutineContext
 
 actual suspend fun <T> platformSafeCall(
     execute: suspend () -> HttpResponse,
-    handleResponse: suspend (HttpResponse) -> Result<T, DataError.Remote>
-): Result<T, DataError.Remote> {
+    handleResponse: suspend (HttpResponse) -> Result<T, DataError>
+): Result<T, DataError> {
     return try {
         val response = execute()
         handleResponse(response)
-    } catch(e: DarwinHttpRequestException) {
+    } catch (e: DarwinHttpRequestException) {
         handleDarwinException(e)
-    } catch(e: UnresolvedAddressException) {
-        Result.Failure(DataError.Remote.NO_INTERNET)
-    } catch(e: HttpRequestTimeoutException) {
-        Result.Failure(DataError.Remote.REQUEST_TIMEOUT)
-    } catch(e: SerializationException) {
-        Result.Failure(DataError.Remote.SERIALIZATION)
+    } catch (e: UnresolvedAddressException) {
+        Result.Failure(NoInternet)
+    } catch (e: HttpRequestTimeoutException) {
+        Result.Failure(ClientError.Timeout)
+    } catch (e: SerializationException) {
+        Result.Failure(Serialization)
     } catch (e: Exception) {
         coroutineContext.ensureActive()
-        Result.Failure(DataError.Remote.UNKNOWN)
+        Result.Failure(UnknownError(e))
     }
 }
 
-private fun handleDarwinException(e: DarwinHttpRequestException): Result<Nothing, DataError.Remote> {
+private fun handleDarwinException(e: DarwinHttpRequestException): Result<Nothing, DataError> {
     val nsError = e.origin
-
-    return if(nsError.domain == NSURLErrorDomain) {
-        when(nsError.code) {
+    return if (nsError.domain == NSURLErrorDomain) {
+        when (nsError.code) {
             NSURLErrorNotConnectedToInternet,
             NSURLErrorNetworkConnectionLost,
             NSURLErrorCannotFindHost,
@@ -53,12 +56,9 @@ private fun handleDarwinException(e: DarwinHttpRequestException): Result<Nothing
             NSURLErrorResourceUnavailable,
             NSURLErrorInternationalRoamingOff,
             NSURLErrorCallIsActive,
-            NSURLErrorDataNotAllowed -> {
-                Result.Failure(DataError.Remote.NO_INTERNET)
-            }
-
-            NSURLErrorTimedOut -> Result.Failure(DataError.Remote.REQUEST_TIMEOUT)
-            else -> Result.Failure(DataError.Remote.UNKNOWN)
+            NSURLErrorDataNotAllowed -> Result.Failure(NoInternet)
+            NSURLErrorTimedOut -> Result.Failure(ClientError.Timeout)
+            else -> Result.Failure(UnknownError())
         }
-    } else Result.Failure(DataError.Remote.UNKNOWN)
+    } else Result.Failure(UnknownError())
 }

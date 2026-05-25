@@ -26,7 +26,7 @@ data class PagingState<T>(
     val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val hasReachedEnd: Boolean = false,
-    val error: DataError.Remote? = null,
+    val error: DataError? = null,
 ) {
     /**
      * `true` when there are no items and no load is in progress.
