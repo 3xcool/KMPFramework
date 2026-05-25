@@ -22,6 +22,7 @@ kotlin {
                 implementation(libs.kotlinx.collections.immutable)
 
                 api(libs.jetbrains.lifecycle.viewmodel)
+                implementation(libs.jetbrains.lifecycle.compose)
 
                 implementation(compose.components.uiToolingPreview)
 
