@@ -26,20 +26,17 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ⏳ `Framework.start(config: FrameworkConfig.Init)` in `framework/sdk` — single entry point that initializes `FrameworkConfig`, `ShowMeLoggerK`, `HttpClientFactory`, and (later) analytics + crash reporting. Once this exists, the `println(...)` fallbacks in `CommonViewModel` can be removed.
 
 ### Domain (`core/domain`)
-- ⏳ `Resource<T>` wrapper (Loading/Success/Error) — decide if it complements `Result` or replaces it for UI state.
-- ⏳ Pagination primitives — `PagedSource<T>`, `PagingState<T>`, `paginate(flow)` operator on top of `Result`/`Flow`.
-- ⏳ Forms / Validation — `Validator<T>` interface + composable `rememberFieldState(...)` + common rules (required, email, regex, min/max length).
-- ⏳ Re-expose `UiText` from `domain` (today it only lives in `designsystem`) so non-Compose layers can build domain results without depending on UI.
+- ✅ `Resource<T>` wrapper — `sealed interface Resource<T>`: `Idle | Loading | Success(data) | Paginating(data) | Error(errorType, message?, data?)`. Repositories return `Flow<Resource<T>>`; ViewModels collect into `StateFlow`. `DataError` unified into open interface hierarchy (`ClientError`, `ServerError`, `NoInternet`, `Serialization`, `LocalError`, `UnknownError`).
+- ✅ Pagination primitives — `Paginator<T,K>` + `PagingSource<T,K>` + `PagingMerger` (UTC conflict resolution) + `PagingState<T>` + `RetryablePagingSource` with exponential back-off via `RetryPolicy` / `withRetry`.
+- ✅ Forms / Validation — `ValidationError` (open interface, built-ins: Required/TooShort/TooLong/InvalidEmail/InvalidPattern/Custom), `Validator<T>` + `AsyncValidator<T>` + `and` chaining, `ValidationTrigger` (OnChange/OnBlur/OnSubmit/OnChangeAfterBlur), `FieldState<T>`, `FieldController<T>` (sync+async, scoped coroutines), `FormController` (validateAll, whileSubmitting), `Validators` factory. Presentation: `ValidationError.toUiText()`, `rememberFieldController`, `FieldController.rememberState()`.
+- ✅ `UiText` / domain error display — solved via typed `ValidationError` + `BuiltInValidationError` in domain; presentation layer maps to `UiText` via extension. No Compose deps in domain.
 
 ### Utilities (`core/utils`)
 - ⏳ Date / Time utilities on top of `kotlinx-datetime` — `Instant.format(locale, pattern)`, `LocalDate.relative(now)`, time-zone-safe `now()` via overridable `Clock`.
 - ⏳ Move Screen Size (`DeviceScreenConfiguration`) from `core/presentation` to `core/utils` so non-Compose modules can consume it.
 
 ### Data (`core/data`)
-- ⏳ Repository base interfaces / abstract classes.
-- ⏳ Base DTOs — `ApiResponse<T>`, `Envelope<T>`, error DTOs aligned with `DataError.Remote`.
-- ⏳ SQLDelight wiring — driver, schema location, shared `.sq` files for common entities (User, Session).
-- ⏳ Cache contracts — in-memory LRU + persistent cache interface.
+- ✅ SQLDelight wiring — `DatabaseDriverFactory` expect/actual (Android `AndroidSqliteDriver`, iOS `NativeSqliteDriver`, JVM `JdbcSqliteDriver` → `java.io.tmpdir`). `FlowQuery` extensions (`asFlowList`, `asFlowOne`, `asFlowOneOrNull`). `InstantColumnAdapter`, `LocalDateColumnAdapter`, `LocalDateTimeColumnAdapter`. `SqlDelightConventionPlugin` registered in build-logic. Schema files are intentionally client-owned — framework is driver-only.
 - ⏳ Typed WebSocket client wrapper (plugin already installed; needs a `RealtimeClient` abstraction).
 - ⏳ HTTP interceptor for auth header injection + retry, plumbed through `HttpClientFactory`.
 

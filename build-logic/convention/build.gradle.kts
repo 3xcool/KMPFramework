@@ -86,6 +86,10 @@ gradlePlugin {
             id = "com.tekmoon.convention.room"
             implementationClass = "RoomConventionPlugin"
         }
+        register("sqldelight") {
+            id = "com.tekmoon.convention.sqldelight"
+            implementationClass = "SqlDelightConventionPlugin"
+        }
         register("kmpAndroidTest") {
             id = "com.tekmoon.convention.kmp.android.test"
             implementationClass = "KmpAndroidTestConventionPlugin"
