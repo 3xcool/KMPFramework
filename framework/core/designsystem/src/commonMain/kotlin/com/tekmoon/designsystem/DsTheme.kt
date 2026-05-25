@@ -15,8 +15,10 @@ import com.tekmoon.designsystem.tokens.*
 import com.tekmoon.designsystem.foundation.DarkTextColors
 import com.tekmoon.designsystem.foundation.DsTypography
 import com.tekmoon.designsystem.foundation.LightTextColors
+import com.tekmoon.designsystem.foundation.LocalDsFontScale
 import com.tekmoon.designsystem.foundation.LocalDsTextColors
 import com.tekmoon.designsystem.foundation.LocalDsTypography
+import com.tekmoon.designsystem.platform.platformOsFontScale
 import com.tekmoon.designsystem.util.*
 
 /**
@@ -74,9 +76,6 @@ fun DsTheme(
         info = hslAccent(AlertHues.Info, 0.60f, 0.55f)
     )
 
-    // Typography
-    val typography = DsTypography
-
     val textColors = if (darkTheme) {
         DarkTextColors
     } else {
@@ -99,19 +98,25 @@ fun DsTheme(
         )
     }
 
-    CompositionLocalProvider(
-        LocalDsColors provides colors,
-        LocalDsSpacing provides DefaultSpacing,
-        LocalDsShapes provides DsShapesDefault,
-        LocalDsElevation provides DefaultElevation,
-        LocalDsShadows provides DefaultShadows,
-        LocalDsMotion provides DsMotionLevel.Full,
-        LocalDsImageLoader provides imageLoader,
-        LocalDsTypography provides typography,
-        LocalDsTextColors provides textColors,
-        LocalDsSurfaceColors provides surfaceColors,
-        content = content
-    )
+    // LocalDsFontScale must be provided before DsTypography is read, since DsTypography
+    // multiplies its sizes by LocalDsFontScale.current. On iOS this bridges Dynamic Type;
+    // on Android/JVM the actual returns 1.0f and `.sp` handles OS scaling on its own.
+    CompositionLocalProvider(LocalDsFontScale provides platformOsFontScale()) {
+        val typography = DsTypography
+        CompositionLocalProvider(
+            LocalDsColors provides colors,
+            LocalDsSpacing provides DefaultSpacing,
+            LocalDsShapes provides DsShapesDefault,
+            LocalDsElevation provides DefaultElevation,
+            LocalDsShadows provides DefaultShadows,
+            LocalDsMotion provides DsMotionLevel.Full,
+            LocalDsImageLoader provides imageLoader,
+            LocalDsTypography provides typography,
+            LocalDsTextColors provides textColors,
+            LocalDsSurfaceColors provides surfaceColors,
+            content = content
+        )
+    }
 }
 
 private val LocalDsColors = staticCompositionLocalOf<DsColors> {

@@ -49,14 +49,20 @@ private fun baseTextStyle(
     lineHeight = fontSize * 1.4f
 )
 
-val DsTypography @Composable get() = DsTypographyScale(
-    xs = baseTextStyle(12.sp, FontWeight.Normal),
-    sm = baseTextStyle(14.sp, FontWeight.Normal),
-    base = baseTextStyle(16.sp, FontWeight.Normal),
-    md = baseTextStyle(18.sp, FontWeight.Normal),
-    lg = baseTextStyle(20.sp, FontWeight.Bold),
-    xl = baseTextStyle(24.sp, FontWeight.Bold),
-)
+// Multiplied by LocalDsFontScale.current so platforms that need to bridge their OS-level
+// font-scale setting (notably iOS Dynamic Type, which Compose `.sp` does not respect) can do
+// so by providing a non-1.0 value in DsTheme.
+val DsTypography @Composable get(): DsTypographyScale {
+    val s = LocalDsFontScale.current
+    return DsTypographyScale(
+        xs = baseTextStyle(12.sp * s, FontWeight.Normal),
+        sm = baseTextStyle(14.sp * s, FontWeight.Normal),
+        base = baseTextStyle(16.sp * s, FontWeight.Normal),
+        md = baseTextStyle(18.sp * s, FontWeight.Normal),
+        lg = baseTextStyle(20.sp * s, FontWeight.Bold),
+        xl = baseTextStyle(24.sp * s, FontWeight.Bold),
+    )
+}
 
 object DsGray {
     fun lightness(value: Int): Color =
@@ -104,6 +110,8 @@ val DarkTextColors = DsTextColors(
 val LocalDsTypography = staticCompositionLocalOf<DsTypographyScale> {
     error("DsTypography not provided")
 }
+
+val LocalDsFontScale = staticCompositionLocalOf { 1.0f }
 
 val LocalDsTextColors = staticCompositionLocalOf<DsTextColors> {
     error("DsTextColors not provided")
