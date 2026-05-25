@@ -43,7 +43,7 @@ abstract class RetryablePagingSource<T, K>(
      *
      * @param page     1-indexed page number.
      * @param pageSize Number of items per page (from [PagingConfig.pageSize]).
-     * @return [Result.Success] with the page items, or [Result.Failure] with a [DataError.Remote].
+     * @return [Result.Success] with the page items, or [Result.Failure] with a [DataError].
      */
     abstract suspend fun fetchPage(page: Int, pageSize: Int): Result<List<T>, DataError>
 

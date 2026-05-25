@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.seconds
  * @param delayFactor    Multiplicative back-off factor applied on each successive attempt.
  * @param maxDelay       Upper cap for the computed delay.
  * @param shouldRetry    Predicate that decides whether a given error is worth retrying.
- *                       Defaults to [DataError.Remote.isRetryable].
+ *                       Defaults to [DataError.isRetryable].
  * @param onRetry        Optional callback invoked *before* each retry sleep so callers can
  *                       observe progress (logging, analytics, UI updates, …).
  *                       Parameters: attempt (1-indexed), maxRetries, the error that triggered
