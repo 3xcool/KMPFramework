@@ -150,7 +150,6 @@ fun rememberDsBottomSheetScope(
 @Composable
 fun DsBottomSheet(
     sheetScope: DsBottomSheetScope,
-    sheetContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     sheetColor: Color = DsTheme.surfaceColors.modal,
     shape: Shape = DsTheme.shapes.xl,
@@ -164,6 +163,7 @@ fun DsBottomSheet(
     onCollapse: () -> Boolean = { true },
     onHalfExpand: () -> Boolean = { true },
     onExpand: () -> Boolean = { true },
+    sheetContent: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
