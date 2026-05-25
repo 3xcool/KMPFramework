@@ -54,6 +54,33 @@ fun DsButtonVariantPreview() = DsPreviewScaffold {
         variant = DsButtonVariant.Text,
         onClick = {}
     )
+
+    Spacer(Modifier.height(24.dp))
+
+    DsButton(
+        text = "Destructive Solid",
+        intent = DsButtonIntent.Destructive,
+        variant = DsButtonVariant.Solid,
+        onClick = {}
+    )
+
+    Spacer(Modifier.height(12.dp))
+
+    DsButton(
+        text = "Destructive Outlined",
+        intent = DsButtonIntent.Destructive,
+        variant = DsButtonVariant.Outlined,
+        onClick = {}
+    )
+
+    Spacer(Modifier.height(12.dp))
+
+    DsButton(
+        text = "Destructive Text",
+        intent = DsButtonIntent.Destructive,
+        variant = DsButtonVariant.Text,
+        onClick = {}
+    )
 }
 
 @Preview(showBackground = true)
