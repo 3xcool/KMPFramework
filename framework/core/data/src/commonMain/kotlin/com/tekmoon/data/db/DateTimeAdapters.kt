@@ -1,9 +1,9 @@
 package com.tekmoon.data.db
 
 import app.cash.sqldelight.ColumnAdapter
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlin.time.Instant
 
 /**
  * SQLDelight [ColumnAdapter] implementations for `kotlinx-datetime` types.

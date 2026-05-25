@@ -17,6 +17,10 @@ kotlin {
                 implementation(libs.bundles.ktor.common)
                 implementation(libs.touchlab.kermit)
 
+                // kotlinx-datetime is api because our ColumnAdapters expose LocalDate /
+                // LocalDateTime in their public signature.
+                api(libs.kotlinx.datetime)
+
                 // SQLDelight — runtime + coroutine Flow adapters (api so clients get them transitively)
                 api(libs.sqldelight.runtime)
                 api(libs.sqldelight.coroutines.extensions)
