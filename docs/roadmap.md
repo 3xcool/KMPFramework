@@ -44,8 +44,8 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ⏳ Verify `DataSessionImpl` IO ops actually run on `dispatchers.io` once the consuming feature ports — the default scope now uses `mainImmediate`, but `draftStore.save` / `source.saveLocal` happen on whoever invoked the mutation. Consider wrapping store calls in `withContext(dispatchers.io)`.
 
 ### UI components (`core/designsystem/components`)
-- ⏳ `DsBanner` — inline informational + warning + danger variants.
-- ⏳ `DsToast` + `DsToastHost` — transient feedback, themed.
+- ✅ `DsBanner` — full-width prominent prompt with Info/Success/Warning/Danger types, required primary action, optional secondary action, optional dismiss (required `dismissContentDescription` when dismissable). Leading accent stripe, type-tinted background.
+- ✅ `DsToast` + `DsToastHost` — transient themed feedback, no action. `DsToastController` + `rememberDsToastController` mirror the snackbar pattern. Each `show()` fires `PlatformAccessibility.announce()` so TalkBack/VoiceOver read the message, and the host marks itself as a `LiveRegionMode.Polite` semantics region for belt-and-suspenders coverage.
 - ✅ Accessibility audit pass — required `contentDescription` parameters on every interactive primitive (DsAlert dismiss, DsClickableText/DsLinkText, DsTextField password toggle), Role.Button semantics throughout, `dsMinimumTouchTarget(48.dp)` wrapper enforcing tap regions on Small/Medium variants without changing visuals, and `LocalDsFontScale` bridging iOS `UIContentSizeCategory` into DsTheme typography (Android/JVM let Compose `.sp` handle OS scaling natively).
 
 ### Logging
