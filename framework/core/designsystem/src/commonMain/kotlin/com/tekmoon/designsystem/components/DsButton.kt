@@ -107,7 +107,7 @@ private fun resolveButtonSizeSpec(
 
 // region ========= Definitions =========
 enum class DsButtonVariant { Solid, Outlined, Text }
-enum class DsButtonIntent { Primary, Secondary }
+enum class DsButtonIntent { Primary, Secondary, Destructive }
 enum class DsButtonLoadingMode { ReplaceContent, KeepText }
 enum class DsButtonIconPosition { Start, End }
 
@@ -146,51 +146,52 @@ private fun resolveButtonStyle(
 
     val background = overrides.background ?: when (variant) {
         DsButtonVariant.Solid -> when {
-            !enabled -> colors.bgLight
-            intent == DsButtonIntent.Primary -> colors.primary
-            intent == DsButtonIntent.Secondary -> colors.bgLight
-            else -> colors.bgLight // defensive fallback
+            !enabled                              -> colors.bgLight
+            intent == DsButtonIntent.Primary      -> colors.primary
+            intent == DsButtonIntent.Secondary    -> colors.bgLight
+            intent == DsButtonIntent.Destructive  -> colors.danger
+            else                                  -> colors.bgLight
         }
 
         DsButtonVariant.Outlined,
         DsButtonVariant.Text -> Color.Transparent
 
-        // defensive for future variants
         else -> Color.Transparent
     }
 
     val content = overrides.content ?: when (variant) {
         DsButtonVariant.Solid -> when {
-            !enabled -> colors.textMuted
-            intent == DsButtonIntent.Primary -> colors.onPrimary
-            intent == DsButtonIntent.Secondary -> colors.text
-            else -> colors.text
+            !enabled                              -> colors.textMuted
+            intent == DsButtonIntent.Primary      -> colors.onPrimary
+            intent == DsButtonIntent.Secondary    -> colors.text
+            intent == DsButtonIntent.Destructive  -> colors.onPrimary
+            else                                  -> colors.text
         }
 
         DsButtonVariant.Outlined,
         DsButtonVariant.Text -> when {
-            !enabled -> colors.textMuted
-            intent == DsButtonIntent.Primary -> colors.primary
-            intent == DsButtonIntent.Secondary -> colors.text
-            else -> colors.text // defensive fallback
+            !enabled                              -> colors.textMuted
+            intent == DsButtonIntent.Primary      -> colors.primary
+            intent == DsButtonIntent.Secondary    -> colors.text
+            intent == DsButtonIntent.Destructive  -> colors.danger
+            else                                  -> colors.text
         }
 
-        // defensive for future variants
         else -> colors.text
     }
 
     val border = overrides.border ?: when (variant) {
         DsButtonVariant.Outlined -> when {
-            !enabled -> colors.textMuted
-            intent == DsButtonIntent.Primary -> colors.primary
-            intent == DsButtonIntent.Secondary -> colors.text
-            else -> colors.textMuted // defensive fallback
+            !enabled                              -> colors.textMuted
+            intent == DsButtonIntent.Primary      -> colors.primary
+            intent == DsButtonIntent.Secondary    -> colors.text
+            intent == DsButtonIntent.Destructive  -> colors.danger
+            else                                  -> colors.textMuted
         }
 
         DsButtonVariant.Solid,
         DsButtonVariant.Text -> null
 
-        // defensive for future variants
         else -> null
     }
 

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
@@ -76,6 +78,10 @@ fun DsTextField(
     enabled: Boolean = true,
     readOnly: Boolean = false,
     singleLine: Boolean = true,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 
     leadingIcon: DsTextFieldIcon? = null,
     trailingIcon: DsTextFieldIcon? = null,
@@ -99,6 +105,9 @@ fun DsTextField(
         enabled = enabled,
         readOnly = readOnly,
         singleLine = singleLine,
+        maxLines = maxLines,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         visualVariant = visualVariant,
@@ -131,6 +140,10 @@ internal fun DsTextFieldImpl(
     enabled: Boolean,
     readOnly: Boolean,
     singleLine: Boolean,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 
     leadingIcon: DsTextFieldIcon? = null,
     trailingIcon: DsTextFieldIcon? = null,
@@ -214,6 +227,9 @@ internal fun DsTextFieldImpl(
                 enabled = enabled,
                 readOnly = readOnly,
                 singleLine = singleLine,
+                maxLines = maxLines,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
                 interactionSource = interactionSource,
                 textStyle = textStyle.copy(
                     color = if (enabled) colors.text else colors.disabledText
