@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
 import com.tekmoon.designsystem.foundation.DsColors
+import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
 import com.tekmoon.designsystem.tokens.BorderTokens
@@ -57,8 +58,9 @@ private fun resolveSizeSpec(size: DsIconButtonSize): IconButtonSizeSpec = when (
  * Supports all [DsButtonVariant] and [DsButtonIntent] combinations, including
  * the new [DsButtonIntent.Destructive].
  *
- * Minimum touch target is always ≥ 44 dp (Medium/Large) or 36 dp (Small) —
- * wrap in a larger container if stricter accessibility compliance is needed.
+ * Tap region is always ≥ 48 dp on each axis (enforced via [dsMinimumTouchTarget])
+ * regardless of [size], so Small/Medium visuals stay compact while remaining
+ * accessibility-compliant. The painted surface still uses [IconButtonSizeSpec.touchTarget].
  *
  * @param icon               The icon to display.
  * @param contentDescription Accessibility label for the button.
@@ -113,6 +115,7 @@ fun DsIconButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
+            .dsMinimumTouchTarget(48.dp)
             .size(sizeSpec.touchTarget)
             .clip(shape)
             .background(style.background)

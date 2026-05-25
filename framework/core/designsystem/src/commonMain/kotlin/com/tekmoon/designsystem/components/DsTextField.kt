@@ -23,11 +23,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -35,6 +40,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
 import com.tekmoon.designsystem.foundation.DsShapesDefault
+import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
 import androidx.compose.ui.draw.drawBehind
@@ -89,11 +95,20 @@ fun DsTextField(
     visualVariant: DsTextFieldVariant = DsTextFieldVariant.Outlined,
     isPassword: Boolean = false,
     isPasswordVisible: Boolean = false,
+    passwordShowContentDescription: String? = null,
+    passwordHideContentDescription: String? = null,
 
     textStyle: TextStyle = DsTheme.typography.base,
     colors: DsTextFieldColors = DsTextFieldDefaults.colors(),
     shape: Shape = DsShapesDefault.md
 ) {
+    require(
+        !isPassword ||
+            (passwordShowContentDescription != null && passwordHideContentDescription != null)
+    ) {
+        "DsTextField with isPassword=true requires both passwordShowContentDescription " +
+            "and passwordHideContentDescription"
+    }
     DsTextFieldImpl(
         value = value,
         onValueChange = onValueChange,
@@ -113,6 +128,8 @@ fun DsTextField(
         visualVariant = visualVariant,
         isPassword = isPassword,
         isPasswordVisible = isPasswordVisible,
+        passwordShowContentDescription = passwordShowContentDescription,
+        passwordHideContentDescription = passwordHideContentDescription,
         textStyle = textStyle,
         colors = colors,
         shape = shape
@@ -151,6 +168,8 @@ internal fun DsTextFieldImpl(
     visualVariant: DsTextFieldVariant,
     isPassword: Boolean,
     isPasswordVisible: Boolean,
+    passwordShowContentDescription: String? = null,
+    passwordHideContentDescription: String? = null,
 
     textStyle: TextStyle,
     colors: DsTextFieldColors,
@@ -257,6 +276,8 @@ internal fun DsTextFieldImpl(
                 isPassword -> {
                     DsPasswordToggle(
                         visible = passwordVisible,
+                        showContentDescription = passwordShowContentDescription!!,
+                        hideContentDescription = passwordHideContentDescription!!,
                         onToggle = { passwordVisible = !passwordVisible }
                     )
                 }
@@ -283,14 +304,24 @@ internal fun DsTextFieldImpl(
 @Composable
 private fun DsPasswordToggle(
     visible: Boolean,
-    onToggle: () -> Unit
+    showContentDescription: String,
+    hideContentDescription: String,
+    onToggle: () -> Unit,
 ) {
-    BasicText(
-        text = if (visible) "🙈" else "👁",
+    val description = if (visible) hideContentDescription else showContentDescription
+    Box(
         modifier = Modifier
             .padding(start = 8.dp)
+            .dsMinimumTouchTarget(48.dp)
             .clickable(onClick = onToggle)
-    )
+            .semantics {
+                role = Role.Button
+                contentDescription = description
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        BasicText(text = if (visible) "🙈" else "👁")
+    }
 }
 
 

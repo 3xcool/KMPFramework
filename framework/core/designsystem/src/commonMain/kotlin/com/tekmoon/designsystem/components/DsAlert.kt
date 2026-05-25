@@ -18,8 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
+import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
 
@@ -30,12 +35,14 @@ enum class AlertType { Danger, Warning, Success, Info }
 /**
  * Inline alert banner — used to surface contextual feedback within a screen.
  *
- * @param message     Primary message shown in the alert body.
- * @param type        Semantic intent — controls colors and the default icon tint.
- * @param modifier    Applied to the outermost container.
- * @param title       Optional bold title rendered above [message].
- * @param icon        Optional leading icon. Pass `null` to omit.
- * @param onDismiss   When non-null a dismiss ("×") button is shown at the trailing edge.
+ * @param message                   Primary message shown in the alert body.
+ * @param type                      Semantic intent — controls colors and the default icon tint.
+ * @param modifier                  Applied to the outermost container.
+ * @param title                     Optional bold title rendered above [message].
+ * @param icon                      Optional leading icon. Pass `null` to omit.
+ * @param onDismiss                 When non-null a dismiss ("×") button is shown at the trailing edge.
+ * @param dismissContentDescription Accessibility label for the dismiss button. Required (non-null)
+ *                                  whenever [onDismiss] is non-null.
  */
 @Composable
 fun DsAlert(
@@ -45,7 +52,11 @@ fun DsAlert(
     title: String? = null,
     icon: DsImageSource? = null,
     onDismiss: (() -> Unit)? = null,
+    dismissContentDescription: String? = null,
 ) {
+    require(onDismiss == null || dismissContentDescription != null) {
+        "DsAlert: dismissContentDescription is required when onDismiss is non-null"
+    }
     val colors = resolveAlertColors(type)
 
     Row(
@@ -89,17 +100,27 @@ fun DsAlert(
 
         // Dismiss button
         if (onDismiss != null) {
-            DsText(
-                text = "×",
-                style = DsTheme.typography.lg,
-                color = colors.content.copy(alpha = 0.7f),
+            val description = dismissContentDescription!!
+            Box(
                 modifier = Modifier
+                    .dsMinimumTouchTarget(48.dp)
                     .clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() },
-                        onClick = onDismiss
+                        onClick = onDismiss,
                     )
-            )
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = description
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                DsText(
+                    text = "×",
+                    style = DsTheme.typography.lg,
+                    color = colors.content.copy(alpha = 0.7f),
+                )
+            }
         }
     }
 }

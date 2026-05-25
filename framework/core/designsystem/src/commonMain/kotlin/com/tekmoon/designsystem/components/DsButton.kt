@@ -26,7 +26,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import com.tekmoon.designsystem.foundation.DsColors
+import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
 import com.tekmoon.designsystem.platform.hapticClick
@@ -315,6 +319,7 @@ private fun ButtonContainer(
 ) {
     Box(
         modifier
+            .dsMinimumTouchTarget(48.dp)
             .clip(DsTheme.shapes.lg)
             .background(style.background)
             .then(
@@ -335,6 +340,7 @@ private fun ButtonContainer(
                     it.clickable(enabled = enabled, onClick = onClick)
                 }
             }
+            .semantics { role = Role.Button }
             .padding(padding),
         contentAlignment = Alignment.Center
     ) {

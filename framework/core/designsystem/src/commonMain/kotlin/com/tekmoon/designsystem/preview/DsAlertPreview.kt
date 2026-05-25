@@ -41,12 +41,14 @@ fun DsAlertDismissiblePreview() = DsPreviewScaffold {
         title = "Something went wrong",
         message = "Please try again later.",
         type = AlertType.Danger,
-        onDismiss = {}
+        onDismiss = {},
+        dismissContentDescription = "Dismiss alert",
     )
     Spacer(Modifier.height(8.dp))
     DsAlert(
         message = "Your changes have been saved.",
         type = AlertType.Success,
-        onDismiss = {}
+        onDismiss = {},
+        dismissContentDescription = "Dismiss alert",
     )
 }
