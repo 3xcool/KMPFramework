@@ -3,9 +3,9 @@ package com.tekmoon.data.networking
 import com.tekmoon.data.FrameworkConfig
 import com.tekmoon.data.auth.AuthEvent
 import com.tekmoon.data.auth.NoAuthKey
+import com.tekmoon.data.auth.TokenGate
 import com.tekmoon.data.auth.TokenProvider
 import com.tekmoon.data.logging.SimpleLogger
-import com.tekmoon.domain.util.data.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpSend
@@ -27,8 +27,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 
 /**
@@ -36,8 +34,8 @@ import kotlinx.serialization.json.Json
  *
  * ### Auth (optional)
  * Pass a [TokenProvider] to enable automatic Bearer token injection and single-flight
- * token refresh on 401 responses. Omitting it (or passing `null`) produces a plain client
- * with no auth logic — suitable for public APIs or when auth is handled externally.
+ * token refresh on 401 responses via [TokenGate]. Omitting it (or passing `null`) produces
+ * a plain client with no auth logic — suitable for public APIs.
  *
  * ### Session expiry
  * If auth is enabled and [TokenProvider.refreshToken] fails, [authEvents] emits
@@ -94,7 +92,13 @@ class HttpClientFactory(
             }
         }
 
-        tokenProvider?.let { provider -> installAuthInterceptor(client, provider) }
+        tokenProvider?.let { provider ->
+            val gate = TokenGate(
+                tokenProvider = provider,
+                onSessionExpired = { _authEvents.tryEmit(AuthEvent.SessionExpired) },
+            )
+            installAuthInterceptor(client, gate)
+        }
 
         return client
     }
@@ -104,75 +108,43 @@ class HttpClientFactory(
     // ------------------------------------------------------------------------------------------
 
     /**
-     * Installs a [HttpSend] interceptor that:
-     * 1. Injects `Authorization: Bearer <token>` on every request (unless [NoAuthKey] is set).
-     * 2. On HTTP 401, acquires [refreshMutex] and calls [TokenProvider.refreshToken] — but only
-     *    if the token has not already been refreshed by a concurrent request (single-flight).
-     * 3. Retries the original request with the new token on success.
-     * 4. Emits [AuthEvent.SessionExpired] and returns the 401 response on failure.
+     * Installs a [HttpSend] interceptor wired to a [TokenGate].
      *
-     * ### Thundering-herd protection
-     * When many requests are in-flight simultaneously and the token expires, all of them will
-     * receive 401. They all race to acquire [refreshMutex]:
-     * - The **winner** calls `refreshToken()` and stores the new token inside [TokenProvider].
-     * - Each **waiter** re-reads the token after acquiring the lock; if it has changed since the
-     *   original request, no additional refresh call is made — the waiter retries immediately.
+     * Three steps per request:
+     * 1. **Inject** — read the current token from the gate and set `Authorization: Bearer`.
+     * 2. **Execute** — send the request as normal.
+     * 3. **Refresh & retry** (only on 401) — delegate to [TokenGate.refresh], which handles
+     *    the single-flight mutex internally, then retry once with the new token.
      *
-     * This guarantees the refresh endpoint is called **at most once** per expiry cycle.
+     * Requests marked with [NoAuthKey] (via `noAuth()`) bypass all three steps.
      */
-    private fun installAuthInterceptor(client: HttpClient, provider: TokenProvider) {
-        // One mutex per HttpClient instance — guards the refresh call.
-        val refreshMutex = Mutex()
-
+    private fun installAuthInterceptor(client: HttpClient, gate: TokenGate) {
         client.plugin(HttpSend).intercept { request ->
-            // Requests marked with noAuth() skip all auth logic.
+
+            // ── Opt-out: public endpoints skip auth entirely ─────────────────────────────────
             if (request.attributes.contains(NoAuthKey)) {
                 return@intercept execute(request)
             }
 
-            // ── Step 1: inject the current token ────────────────────────────────────────────
-            val tokenAtSend = provider.getToken()
-            if (tokenAtSend != null) {
-                request.headers[HttpHeaders.Authorization] = "Bearer $tokenAtSend"
+            // ── Step 1: inject current token ─────────────────────────────────────────────────
+            val token = gate.getToken()
+            if (token != null) {
+                request.headers[HttpHeaders.Authorization] = "Bearer $token"
             }
 
-            val originalCall = execute(request)
+            // ── Step 2: execute ───────────────────────────────────────────────────────────────
+            val call = execute(request)
 
-            // ── Step 2: only act on 401; skip if no token was sent (nothing to refresh) ────
-            if (originalCall.response.status != HttpStatusCode.Unauthorized || tokenAtSend == null) {
-                return@intercept originalCall
+            // ── Step 3: on 401, single-flight refresh → retry ────────────────────────────────
+            // Skip if there was no token to begin with — nothing to refresh.
+            if (call.response.status != HttpStatusCode.Unauthorized || token == null) {
+                return@intercept call
             }
 
-            // ── Step 3: single-flight refresh ───────────────────────────────────────────────
-            //
-            // Acquire the mutex so exactly one coroutine calls refreshToken() at a time.
-            // All concurrent callers that also received 401 wait here, then re-check whether
-            // the token was already updated before deciding to refresh again.
-            val refreshResult = refreshMutex.withLock {
-                val tokenNow = provider.getToken()
-                if (tokenNow != null && tokenNow != tokenAtSend) {
-                    // Another coroutine already refreshed while we were waiting — reuse its token.
-                    Result.Success(tokenNow)
-                } else {
-                    // We are the first (or only) caller — perform the actual refresh.
-                    provider.refreshToken()
-                }
-            }
+            val freshToken = gate.refresh() ?: return@intercept call  // null = session expired
 
-            // ── Step 4: retry or signal session expiry ──────────────────────────────────────
-            when (refreshResult) {
-                is Result.Success -> {
-                    // Replace the stale token and re-send the original request.
-                    request.headers[HttpHeaders.Authorization] = "Bearer ${refreshResult.data}"
-                    execute(request)
-                }
-                is Result.Failure -> {
-                    // Refresh token is expired / revoked → the session is over.
-                    // Notify observers (e.g. the nav host) and surface the 401 to the caller.
-                    _authEvents.tryEmit(AuthEvent.SessionExpired)
-                    originalCall
-                }
-            }
+            request.headers[HttpHeaders.Authorization] = "Bearer $freshToken"
+            execute(request)
         }
     }
 }
