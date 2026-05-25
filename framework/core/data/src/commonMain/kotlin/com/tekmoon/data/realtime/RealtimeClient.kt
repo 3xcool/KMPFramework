@@ -4,6 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.websocket.Frame
+import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.concurrent.Volatile
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.random.Random
@@ -237,15 +239,15 @@ internal class RealtimeClientImpl<Event>(
      * @return `true` if the handshake succeeded, `false` on initial failure.
      */
     private suspend fun tryConnect(): Boolean {
+        // Fetch token before opening the socket — Ktor's `request` lambda is non-suspending.
+        val token = config.tokenProvider?.getToken()
         return try {
             // webSocket(urlString, request, block) sets the URL first, then runs the
             // request block — so query-param token delivery appends cleanly.
             httpClient.webSocket(
                 urlString = config.url,
                 request = {
-                    config.tokenProvider?.getToken()?.let { token ->
-                        config.tokenDelivery.applyToken(token, this)
-                    }
+                    if (token != null) config.tokenDelivery.applyToken(token, this)
                 },
             ) {
                 session = this
