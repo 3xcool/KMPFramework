@@ -38,7 +38,7 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 ### Data (`core/data`)
 - ✅ SQLDelight wiring — `DatabaseDriverFactory` expect/actual (Android `AndroidSqliteDriver`, iOS `NativeSqliteDriver`, JVM `JdbcSqliteDriver` → `java.io.tmpdir`). `FlowQuery` extensions (`asFlowList`, `asFlowOne`, `asFlowOneOrNull`). `InstantColumnAdapter`, `LocalDateColumnAdapter`, `LocalDateTimeColumnAdapter`. `SqlDelightConventionPlugin` registered in build-logic. Schema files are intentionally client-owned — framework is driver-only.
 - ⏳ Typed WebSocket client wrapper (plugin already installed; needs a `RealtimeClient` abstraction).
-- ⏳ HTTP interceptor for auth header injection + retry, plumbed through `HttpClientFactory`.
+- ✅ HTTP interceptor for auth header injection + retry, plumbed through `HttpClientFactory`. `TokenProvider` interface, `TokenGate` (single-flight mutex with snapshot-before-wait thundering-herd protection), `AuthEvent.SessionExpired` via `SharedFlow`, `NoAuth` opt-out attribute.
 
 ### Session (`core/session`)
 - ⏳ Verify `DataSessionImpl` IO ops actually run on `dispatchers.io` once the consuming feature ports — the default scope now uses `mainImmediate`, but `draftStore.save` / `source.saveLocal` happen on whoever invoked the mutation. Consider wrapping store calls in `withContext(dispatchers.io)`.
