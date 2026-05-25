@@ -1,3 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Validation messages -->
+    <string name="validation_required">This field is required</string>
+    <string name="validation_too_short">Must be at least %1$d characters</string>
+    <string name="validation_too_long">Must be at most %1$d characters</string>
+    <string name="validation_invalid_email">Enter a valid email address</string>
+    <string name="validation_invalid_pattern">Invalid format</string>
 </resources>
