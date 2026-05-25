@@ -22,8 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
+import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -164,20 +168,28 @@ private fun DsSnackbarItem(
             modifier = Modifier.weight(1f)
         )
 
-        // Action
+        // Action — visible label doubles as the screen-reader announcement.
         if (message.actionLabel != null) {
-            DsText(
-                text = message.actionLabel,
-                style = DsTheme.typography.sm,
-                color = accentColor,
-                modifier = Modifier.clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
-                ) {
-                    message.onAction?.invoke()
-                    onDismiss()
-                }
-            )
+            Box(
+                modifier = Modifier
+                    .dsMinimumTouchTarget(48.dp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                    ) {
+                        message.onAction?.invoke()
+                        onDismiss()
+                    }
+                    .semantics { role = Role.Button }
+                    .padding(horizontal = DsTheme.spacing.sm),
+                contentAlignment = Alignment.Center,
+            ) {
+                DsText(
+                    text = message.actionLabel,
+                    style = DsTheme.typography.sm,
+                    color = accentColor,
+                )
+            }
         }
     }
 }

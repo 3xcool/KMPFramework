@@ -46,8 +46,7 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 ### UI components (`core/designsystem/components`)
 - ⏳ `DsBanner` — inline informational + warning + danger variants.
 - ⏳ `DsToast` + `DsToastHost` — transient feedback, themed.
-- ⏳ Widgets / Graphs — at minimum `DsSparkline` and `DsBarChart` baselines.
-- ⏳ Accessibility audit pass — content descriptions, dynamic font scaling (read OS settings via `PlatformDensity`), minimum touch-target enforcement on every Ds primitive.
+- ✅ Accessibility audit pass — required `contentDescription` parameters on every interactive primitive (DsAlert dismiss, DsClickableText/DsLinkText, DsTextField password toggle), Role.Button semantics throughout, `dsMinimumTouchTarget(48.dp)` wrapper enforcing tap regions on Small/Medium variants without changing visuals, and `LocalDsFontScale` bridging iOS `UIContentSizeCategory` into DsTheme typography (Android/JVM let Compose `.sp` handle OS scaling natively).
 
 ### Logging
 - ⏳ `framework/logger-file` — new sub-module. `FileLogWriter` implementing `LogWriter`, writing a rolling log file in the platform cache directory (Android `cacheDir`, iOS `NSCachesDirectory`, JVM `System.getProperty("java.io.tmpdir")`). Kept separate so the engine stays free of file-I/O deps.
