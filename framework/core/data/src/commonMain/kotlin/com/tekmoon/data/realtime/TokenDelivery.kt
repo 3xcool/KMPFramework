@@ -36,14 +36,17 @@ sealed interface TokenDelivery {
     /**
      * Fully custom delivery — receives the token and the Ktor [HttpRequestBuilder]
      * so the caller can do anything (multiple headers, custom signing, etc.).
+     *
+     * Note: non-suspending. Ktor's `webSocket(request = { … })` lambda is non-suspending,
+     * so any async work should happen in the [TokenProvider] before the token arrives here.
      */
     data class Custom(
-        val apply: suspend (token: String, request: HttpRequestBuilder) -> Unit,
+        val apply: (token: String, request: HttpRequestBuilder) -> Unit,
     ) : TokenDelivery
 }
 
 /** Applies this [TokenDelivery] strategy to a Ktor [HttpRequestBuilder]. */
-internal suspend fun TokenDelivery.applyToken(token: String, request: HttpRequestBuilder) {
+internal fun TokenDelivery.applyToken(token: String, request: HttpRequestBuilder) {
     when (this) {
         is TokenDelivery.Header -> {
             val value = if (prefix.isNotEmpty()) "$prefix $token" else token
