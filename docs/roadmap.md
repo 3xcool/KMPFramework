@@ -118,6 +118,17 @@ Each feature lives in `framework/feature/<name>` and is re-exported through `fra
 - ⏳ Android Play In-App Review integration.
 - 🧪 iOS `SKStoreReviewController.requestReview()` — Phase 4 (device testing).
 
+### Server-Driven UI (`framework/feature/sdui`)
+
+Use-case-agnostic renderer that maps a JSON schema to existing `core/designsystem` components without modifying them. Targets any dynamic-content surface — surveys, dynamic forms, onboarding flows, A/B-tested marketing screens — not tied to a specific feature.
+
+- ⏳ Schema models — `@Serializable` node tree: `Node.Component(type, props, children?)` for DS primitives, `Node.Layout(kind, children)` for `Stack`/`Row`/`Column`/`Spacer`, plus `Container` wrappers. Token references travel as strings (`"spacing": "md"`, `"intent": "primary"`) and resolve against `DsTheme` at render time.
+- ⏳ Action registry — server actions arrive as data (`{"action": "submit"}`, `{"action": "navigate", "to": "..."}`) and are dispatched through a host-provided `ActionHandler`. DS components keep their `() -> Unit` callbacks unchanged — the renderer is the only thing that binds names to closures.
+- ⏳ Renderer — `@Composable fun SduiRenderer(schema, actions, state)` walks the tree and emits DS components. Single entry point; no DS code changes required.
+- ⏳ State / binding — observable holder for dynamic-form answers, conditional visibility (`showIf`), validation wired to `core/domain` `Validator<T>` / `FormController`.
+- ⏳ Image + text bridging — `DsImageSource.UrlIcon` for server-loaded images; `UiText.DynamicString` for server-sent copy; `UiText.StringRes` reserved for local catalog strings.
+- ⏳ Cross-cutting design rule (applies to ALL new framework code, not just this module): components and feature APIs must stay SDUI-mappable — variants as enums/sealed, strings via `UiText`, images via `DsImageSource`, tokens by name, no opaque `@Composable` lambdas in public APIs. The SDUI module is the future consumer; today's code must not block it.
+
 ## Phase 4 — Platform-specific work (needs device testing — deferred)
 
 > **Note:** Everything below is paused until we have a device-testing setup (real device + entitlements + provisioning). Implementing iOS-native Compose interop without being able to run it on hardware too easily ships code that "looks right" but doesn't actually work. Same applies to FCM/APNs token flows and OS-level entitlements.
