@@ -25,6 +25,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 /**
@@ -41,7 +42,7 @@ class DataSessionImpl<Model : Any>(
     private val draftStore: DraftStore<Model>,
     private val savedStateStore: SavedStateStore,
     private val json: Json,
-    dispatchers: DispatcherProvider = StandardDispatchers,
+    private val dispatchers: DispatcherProvider = StandardDispatchers,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + dispatchers.mainImmediate),
 ) : DataSession<Model> {
 
@@ -84,7 +85,10 @@ class DataSessionImpl<Model : Any>(
             mutationMutex.withLock {
                 val sessionId = _state.value.sessionId ?: return@withLock
                 val current = _state.value.resolved ?: return@withLock
-                draftStore.save(sessionId, reducer(current))
+                val updatedDraft = reducer(current)
+                withContext(dispatchers.io) {
+                    draftStore.save(sessionId, updatedDraft)
+                }
             }
         }
     }
@@ -102,7 +106,9 @@ class DataSessionImpl<Model : Any>(
                 val (updatedInitial, updatedDraft) = reducer(initial, draft)
 
                 _state.update { it.copy(initial = updatedInitial) }
-                draftStore.save(sessionId, updatedDraft)
+                withContext(dispatchers.io) {
+                    draftStore.save(sessionId, updatedDraft)
+                }
             }
         }
     }
@@ -126,8 +132,10 @@ class DataSessionImpl<Model : Any>(
                         hasChanges = source.hasChanges(updatedInitial, updatedDraft),
                     )
                 }
-                source.saveLocal(updatedInitial) // triggers localFlow -> sync reruns
-                draftStore.save(sessionId, updatedDraft) // triggers draftFlow -> sync reruns
+                withContext(dispatchers.io) {
+                    source.saveLocal(updatedInitial) // triggers localFlow -> sync reruns
+                    draftStore.save(sessionId, updatedDraft) // triggers draftFlow -> sync reruns
+                }
             }
         }
     }
@@ -139,7 +147,9 @@ class DataSessionImpl<Model : Any>(
                 val resolved = _state.value.resolved ?: return@withLock
                 val updatedResolved = reducer(resolved)
                 _state.update { it.copy(initial = updatedResolved, draft = updatedResolved) }
-                draftStore.save(sessionId, updatedResolved)
+                withContext(dispatchers.io) {
+                    draftStore.save(sessionId, updatedResolved)
+                }
             }
         }
     }
@@ -149,7 +159,9 @@ class DataSessionImpl<Model : Any>(
             mutationMutex.withLock {
                 val sessionId = _state.value.sessionId ?: return@withLock
                 _state.update { it.copy(initial = model, draft = model) }
-                draftStore.save(sessionId, model)
+                withContext(dispatchers.io) {
+                    draftStore.save(sessionId, model)
+                }
             }
         }
     }
@@ -158,7 +170,9 @@ class DataSessionImpl<Model : Any>(
         scope.launch {
             mutationMutex.withLock {
                 val sessionId = _state.value.sessionId ?: return@withLock
-                draftStore.clear(sessionId)
+                withContext(dispatchers.io) {
+                    draftStore.clear(sessionId)
+                }
             }
         }
     }
@@ -174,7 +188,9 @@ class DataSessionImpl<Model : Any>(
             refreshRequests = Channel(Channel.CONFLATED)
 
             if (clearSavedState && sessionId != null) {
-                savedStateStore.clear(sessionId)
+                withContext(dispatchers.io) {
+                    savedStateStore.clear(sessionId)
+                }
             }
 
             _state.value = DataSessionState()
@@ -197,14 +213,16 @@ class DataSessionImpl<Model : Any>(
             mutationMutex.withLock {
                 val sessionId = _state.value.sessionId ?: return@withLock
 
-                savedStateStore.update(sessionId) { current ->
-                    val previous = current[key.key]
-                        ?.let { json.decodeFromString(key.serializer, it) }
-                        ?: key.defaultValue
+                withContext(dispatchers.io) {
+                    savedStateStore.update(sessionId) { current ->
+                        val previous = current[key.key]
+                            ?.let { json.decodeFromString(key.serializer, it) }
+                            ?: key.defaultValue
 
-                    val updated = reducer(previous)
+                        val updated = reducer(previous)
 
-                    current + (key.key to json.encodeToString(key.serializer, updated))
+                        current + (key.key to json.encodeToString(key.serializer, updated))
+                    }
                 }
             }
         }

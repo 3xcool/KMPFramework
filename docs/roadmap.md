@@ -33,7 +33,6 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 
 ### Utilities (`core/utils`)
 - ⏳ Date / Time utilities on top of `kotlinx-datetime` — `Instant.format(locale, pattern)`, `LocalDate.relative(now)`, time-zone-safe `now()` via overridable `Clock`.
-- ⏳ Move Screen Size (`DeviceScreenConfiguration`) from `core/presentation` to `core/utils` so non-Compose modules can consume it.
 
 ### Data (`core/data`)
 - ✅ SQLDelight wiring — `DatabaseDriverFactory` expect/actual (Android `AndroidSqliteDriver`, iOS `NativeSqliteDriver`, JVM `JdbcSqliteDriver` → `java.io.tmpdir`). `FlowQuery` extensions (`asFlowList`, `asFlowOne`, `asFlowOneOrNull`). `InstantColumnAdapter`, `LocalDateColumnAdapter`, `LocalDateTimeColumnAdapter`. `SqlDelightConventionPlugin` registered in build-logic. Schema files are intentionally client-owned — framework is driver-only.
@@ -41,7 +40,10 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ✅ HTTP interceptor for auth header injection + retry, plumbed through `HttpClientFactory`. `TokenProvider` interface, `TokenGate` (single-flight mutex with snapshot-before-wait thundering-herd protection), `AuthEvent.SessionExpired` via `SharedFlow`, `NoAuth` opt-out attribute.
 
 ### Session (`core/session`)
-- ⏳ Verify `DataSessionImpl` IO ops actually run on `dispatchers.io` once the consuming feature ports — the default scope now uses `mainImmediate`, but `draftStore.save` / `source.saveLocal` happen on whoever invoked the mutation. Consider wrapping store calls in `withContext(dispatchers.io)`.
+
+Module placement is intentional and stays as `core/session` — it is a pure in-memory orchestration primitive (no I/O of its own; sources are feature-provided via `DataSessionSource`), but it pulls in `androidx.lifecycle.viewmodel.savedstate`, which doesn't belong in `core/domain`. Keeping it separate also avoids forcing every `core/domain` consumer to inherit the editing-flow surface.
+
+- ⏳ Move store I/O off the Main dispatcher in `DataSessionImpl`. The session scope is built on `dispatchers.mainImmediate`, so the bodies of `updateDraft` / `updateInitialAndDraft` / `commit(model)` / `commit(reducer)` / `syncRemoteChange` / `discardDraft` / `updateSavedState` currently run their store calls (`draftStore.save` / `draftStore.clear` / `savedStateStore.update`) and `source.saveLocal` on Main — disk-backed or otherwise blocking implementations would jank the UI. Wrap the store/source calls (not the whole mutex critical section, and not `_state.update`) in `withContext(dispatchers.io)`. Add a `FakeDraftStore` / `FakeSavedStateStore` test that asserts the calling dispatcher when `save` / `update` / `clear` / `saveLocal` are invoked.
 
 ### UI components (`core/designsystem/components`)
 - ✅ `DsBanner` — full-width prominent prompt with Info/Success/Warning/Danger types, required primary action, optional secondary action, optional dismiss (required `dismissContentDescription` when dismissable). Leading accent stripe, type-tinted background.
