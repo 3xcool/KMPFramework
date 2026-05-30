@@ -65,9 +65,7 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ⏳ TestTag vs our Custom way to collect click events
 
 ### Storage (new module `framework/core/storage`)
-- ⏳ `expect class SecureStore` — Android EncryptedSharedPreferences/Keystore, iOS Keychain, JVM Secret Service / Keychain. Consumed by Auth.Cryptography.
-- ⏳ `expect class FileStorage` — downloads / attachments directory abstraction.
-- ⏳ `expect class Preferences` — `multiplatform-settings` or DataStore-equivalent.
+- ✅ `Preferences` interface backed by `androidx.datastore-preferences-core` (multiplatform). Reactive `Flow`-returning getters with defaults for every primitive (`getString` / `getInt` / `getLong` / `getBoolean` / `getFloat` / `getDouble` / `getStringSet`), `suspend` setters, `remove` / `clear` / `contains`, and a `keys: Flow<Set<String>>` snapshot. Construct via the platform factory: `createPreferences(context, name)` on Android, `createPreferences(name)` on iOS, `createPreferences(name, baseDir)` on JVM (file `<name>.preferences_pb` in the platform's per-app storage). Re-exported through `framework/sdk`. Verified by `PreferencesTest` (16/16 passing on JVM).
 
 ## Phase 2 — Core Utils (common code only, platform actuals deferred)
 
@@ -80,6 +78,10 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ⏳ Android actual via `ConnectivityManager.NetworkCallback`.
 - ⏳ Desktop JVM actual via `InetAddress.isReachable` polling fallback.
 - 🧪 iOS actual via `NWPathMonitor` — needs device testing (Phase 4).
+
+### Storage (new module `framework/core/storage`)
+- ⏳ `expect class SecureStore` — Android EncryptedSharedPreferences/Keystore, iOS Keychain, JVM Secret Service / Keychain. Consumed by Auth.Cryptography.
+- ⏳ `expect class FileStorage` — downloads / attachments directory abstraction.
 
 ## Phase 3 — Core Features (new modules)
 
