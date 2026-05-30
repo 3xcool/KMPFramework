@@ -60,9 +60,12 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - 🧪 iOS actual via `BGTaskScheduler` — Phase 4 (device testing).
 
 ### Analytics (`framework/feature/analytics`)
-- ⏳ `expect class AnalyticsClient { fun track(event: String, params: Map<String, Any?>) }`.
-- ⏳ Adapters: Firebase Analytics, Mixpanel, Amplitude.
-- ⏳ TestTag vs our Custom way to collect click events
+- ✅ `AnalyticsClient` interface (`track` / `screen` / `identify` / `reset` / `flush`) + `NoOpAnalyticsClient` (default) + `MultiAnalyticsClient` (fan-out with `runCatching` so one adapter's failure doesn't break the others) + `RecordingAnalyticsClient` (in commonMain for downstream tests). Wired into `Framework.start` via `FrameworkInit.analyticsClient`; exposed via `Framework.analytics`. Documented at [docs/analytics.md](analytics.md).
+- ✅ LGPD-aware PII guard — `Pii(value, classification)` wrapper with `PiiClass.{PseudoAnonymous, Personal, Sensitive}` (LGPD Art. 5 II + Art. 11). `PiiPolicy` `fun interface` with built-ins `DropAll` (default), `KeepPseudonymized`, `PassThrough`. `PolicyAnalyticsClient` decorator is always wrapped by `Framework.start` so adapters never see raw `Pii` values. 14/14 tests passing on `:framework:feature:analytics:jvmTest`.
+- ✅ Custom analyticsId for click events (no `testTag` overloading) — `LocalAnalytics` CompositionLocal in `:framework:core:designsystem` plus `analyticsId` / `analyticsParams` params on `DsButton`, `DsIconButton`, `DsClickableText`, `DsLinkText`. Each emits its own event name (`ds_button_clicked`, `ds_icon_button_clicked`, `ds_clickable_text_clicked`, `ds_link_clicked`) with stable param shape.
+- ⏳ Adapters: Firebase Analytics, Mixpanel, Amplitude — separate sub-modules; mechanical now that the interface is locked.
+- ⏳ Multi-action DS components: `DsAlert` / `DsBanner` / `DsDialog` / `DsSnackbar` / clickable `DsCard` `analyticsId` per action.
+- ⏳ Kompass screen-view auto-tracking — emit `analytics.screen(...)` on `NavController` destination changes.
 
 ### Storage (new module `framework/core/storage`)
 - ✅ `Preferences` interface backed by `androidx.datastore-preferences-core` (multiplatform). Reactive `Flow`-returning getters with defaults for every primitive (`getString` / `getInt` / `getLong` / `getBoolean` / `getFloat` / `getDouble` / `getStringSet`), `suspend` setters, `remove` / `clear` / `contains`, and a `keys: Flow<Set<String>>` snapshot. Construct via the platform factory: `createPreferences(context, name)` on Android, `createPreferences(name)` on iOS, `createPreferences(name, baseDir)` on JVM (file `<name>.preferences_pb` in the platform's per-app storage). Re-exported through `framework/sdk`. Verified by `PreferencesTest` (16/16 passing on JVM).
