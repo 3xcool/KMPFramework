@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
+import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,12 +42,18 @@ enum class DsSnackbarType { Info, Success, Warning, Error }
 /**
  * A single snackbar message.
  *
- * @param message     Text shown in the snackbar.
- * @param type        Semantic intent — controls the accent color.
- * @param actionLabel Optional label for the action button.
- * @param onAction    Invoked when the action button is tapped.
- * @param durationMs  How long (ms) the snackbar stays visible before auto-dismissing.
- *                    Pass [Long.MAX_VALUE] to keep it until dismissed manually.
+ * @param message         Text shown in the snackbar.
+ * @param type            Semantic intent — controls the accent color.
+ * @param actionLabel     Optional label for the action button.
+ * @param onAction        Invoked when the action button is tapped.
+ * @param durationMs      How long (ms) the snackbar stays visible before auto-dismissing.
+ *                        Pass [Long.MAX_VALUE] to keep it until dismissed manually.
+ * @param analyticsId     Stable identifier emitted with the `"ds_snackbar_action_clicked"`
+ *                        analytics event when the action button is tapped. `null` (default)
+ *                        disables analytics for this snackbar. Ignored if [onAction] is `null`
+ *                        (no action button rendered).
+ * @param analyticsParams Extra params merged into the analytics event payload alongside
+ *                        `id` + `type` + `label`.
  */
 data class DsSnackbarMessage(
     val message: String,
@@ -54,6 +61,8 @@ data class DsSnackbarMessage(
     val actionLabel: String? = null,
     val onAction: (() -> Unit)? = null,
     val durationMs: Long = 3_000L,
+    val analyticsId: String? = null,
+    val analyticsParams: Map<String, Any?> = emptyMap(),
 )
 
 // ─── Controller ──────────────────────────────────────────────────────────────
@@ -85,7 +94,19 @@ class DsSnackbarController {
         actionLabel: String? = null,
         onAction: (() -> Unit)? = null,
         durationMs: Long = 3_000L,
-    ) = show(DsSnackbarMessage(message, type, actionLabel, onAction, durationMs))
+        analyticsId: String? = null,
+        analyticsParams: Map<String, Any?> = emptyMap(),
+    ) = show(
+        DsSnackbarMessage(
+            message = message,
+            type = type,
+            actionLabel = actionLabel,
+            onAction = onAction,
+            durationMs = durationMs,
+            analyticsId = analyticsId,
+            analyticsParams = analyticsParams,
+        )
+    )
 
     fun dismiss() { _current.update { null } }
 }
@@ -143,6 +164,7 @@ private fun DsSnackbarItem(
     onDismiss: () -> Unit,
 ) {
     val accentColor = resolveSnackbarAccent(message.type)
+    val analytics = LocalAnalytics.current
 
     Row(
         modifier = Modifier
@@ -177,6 +199,16 @@ private fun DsSnackbarItem(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() },
                     ) {
+                        if (message.analyticsId != null) {
+                            analytics.track(
+                                event = "ds_snackbar_action_clicked",
+                                params = mapOf(
+                                    "id" to message.analyticsId,
+                                    "type" to message.type.name,
+                                    "label" to message.actionLabel,
+                                ) + message.analyticsParams,
+                            )
+                        }
                         message.onAction?.invoke()
                         onDismiss()
                     }

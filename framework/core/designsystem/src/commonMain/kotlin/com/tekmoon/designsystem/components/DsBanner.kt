@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
+import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
@@ -77,11 +78,32 @@ fun DsBanner(
     secondaryAction: DsBannerAction? = null,
     onDismiss: (() -> Unit)? = null,
     dismissContentDescription: String? = null,
+    /**
+     * Stable identifier emitted with `"ds_banner_primary_clicked"` when the primary action
+     * fires. `null` (default) disables analytics for the primary action.
+     */
+    primaryAnalyticsId: String? = null,
+    /**
+     * Stable identifier emitted with `"ds_banner_secondary_clicked"` when the secondary action
+     * fires. Ignored if [secondaryAction] is `null`.
+     */
+    secondaryAnalyticsId: String? = null,
+    /**
+     * Stable identifier emitted with `"ds_banner_dismissed"` when the dismiss X is tapped.
+     * Ignored if [onDismiss] is `null`.
+     */
+    dismissAnalyticsId: String? = null,
+    /**
+     * Extra params merged into every event this banner emits (alongside each event's `id`
+     * + `type`). Use for screen / module / user-state tags that apply to all three targets.
+     */
+    analyticsParams: Map<String, Any?> = emptyMap(),
 ) {
     require(onDismiss == null || dismissContentDescription != null) {
         "DsBanner: dismissContentDescription is required when onDismiss is non-null"
     }
     val colors = resolveBannerColors(type)
+    val analytics = LocalAnalytics.current
 
     Row(
         modifier = modifier
@@ -134,13 +156,25 @@ fun DsBanner(
 
                 if (onDismiss != null) {
                     val description = dismissContentDescription!!
+                    val trackedDismiss: () -> Unit = if (dismissAnalyticsId == null) onDismiss else {
+                        {
+                            analytics.track(
+                                event = "ds_banner_dismissed",
+                                params = mapOf(
+                                    "id" to dismissAnalyticsId,
+                                    "type" to type.name,
+                                ) + analyticsParams,
+                            )
+                            onDismiss()
+                        }
+                    }
                     Box(
                         modifier = Modifier
                             .dsMinimumTouchTarget(48.dp)
                             .clickable(
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() },
-                                onClick = onDismiss,
+                                onClick = trackedDismiss,
                             )
                             .semantics {
                                 role = Role.Button
@@ -164,26 +198,54 @@ fun DsBanner(
                 horizontalArrangement = Arrangement.End,
             ) {
                 if (secondaryAction != null) {
+                    val trackedSecondary: () -> Unit =
+                        if (secondaryAnalyticsId == null) secondaryAction.onClick else {
+                            {
+                                analytics.track(
+                                    event = "ds_banner_secondary_clicked",
+                                    params = mapOf(
+                                        "id" to secondaryAnalyticsId,
+                                        "type" to type.name,
+                                        "label" to secondaryAction.label,
+                                    ) + analyticsParams,
+                                )
+                                secondaryAction.onClick()
+                            }
+                        }
                     // Text-variant secondary uses the banner's accent color so it stays in
                     // the same color family as the surrounding tint — better readability
                     // than the theme's default secondary text color, which can wash out
                     // against a tinted background.
                     DsButton(
                         text = secondaryAction.label,
-                        onClick = secondaryAction.onClick,
+                        onClick = trackedSecondary,
                         variant = DsButtonVariant.Text,
                         size = DsButtonSize.Small,
                         contentColor = colors.accent,
                     )
                     Spacer(Modifier.width(DsTheme.spacing.sm))
                 }
+                val trackedPrimary: () -> Unit =
+                    if (primaryAnalyticsId == null) primaryAction.onClick else {
+                        {
+                            analytics.track(
+                                event = "ds_banner_primary_clicked",
+                                params = mapOf(
+                                    "id" to primaryAnalyticsId,
+                                    "type" to type.name,
+                                    "label" to primaryAction.label,
+                                ) + analyticsParams,
+                            )
+                            primaryAction.onClick()
+                        }
+                    }
                 // Primary uses the banner's accent as the solid background with a
                 // forced light/dark contrast-aware text color, instead of the theme's
                 // global primary (which is blue regardless of banner type and clashes
                 // visually on Warning/Success).
                 DsButton(
                     text = primaryAction.label,
-                    onClick = primaryAction.onClick,
+                    onClick = trackedPrimary,
                     variant = DsButtonVariant.Solid,
                     size = DsButtonSize.Small,
                     backgroundColor = colors.accent,

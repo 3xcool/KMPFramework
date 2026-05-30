@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
+import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
@@ -53,11 +54,20 @@ fun DsAlert(
     icon: DsImageSource? = null,
     onDismiss: (() -> Unit)? = null,
     dismissContentDescription: String? = null,
+    /**
+     * Stable identifier emitted with the `"ds_alert_dismissed"` analytics event when the
+     * dismiss X is tapped. `null` (default) disables analytics for the dismiss action.
+     * Ignored if [onDismiss] is `null` (no dismiss button rendered).
+     */
+    dismissAnalyticsId: String? = null,
+    /** Extra params merged into the analytics event payload alongside `id` + `type`. */
+    analyticsParams: Map<String, Any?> = emptyMap(),
 ) {
     require(onDismiss == null || dismissContentDescription != null) {
         "DsAlert: dismissContentDescription is required when onDismiss is non-null"
     }
     val colors = resolveAlertColors(type)
+    val analytics = LocalAnalytics.current
 
     Row(
         modifier = modifier
@@ -101,13 +111,25 @@ fun DsAlert(
         // Dismiss button
         if (onDismiss != null) {
             val description = dismissContentDescription!!
+            val trackedDismiss: () -> Unit = if (dismissAnalyticsId == null) onDismiss else {
+                {
+                    analytics.track(
+                        event = "ds_alert_dismissed",
+                        params = mapOf(
+                            "id" to dismissAnalyticsId,
+                            "type" to type.name,
+                        ) + analyticsParams,
+                    )
+                    onDismiss()
+                }
+            }
             Box(
                 modifier = Modifier
                     .dsMinimumTouchTarget(48.dp)
                     .clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() },
-                        onClick = onDismiss,
+                        onClick = trackedDismiss,
                     )
                     .semantics {
                         role = Role.Button
