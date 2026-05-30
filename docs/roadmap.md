@@ -32,7 +32,7 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ✅ `UiText` / domain error display — solved via typed `ValidationError` + `BuiltInValidationError` in domain; presentation layer maps to `UiText` via extension. No Compose deps in domain.
 
 ### Utilities (`core/utils`)
-- ⏳ Date / Time utilities on top of `kotlinx-datetime` — `Instant.format(locale, pattern)`, `LocalDate.relative(now)`, time-zone-safe `now()` via overridable `Clock`.
+- ✅ Date / Time utilities on top of `kotlinx-datetime` — `TimeProvider` interface (`now()` / `today()` / `nowLocal()` via injectable `Clock` + `TimeZone`, `StandardTimeProvider` + `FixedTimeProvider`); `Instant.format(pattern, locale, timeZone)` via expect/actual (Android/JVM `SimpleDateFormat`, iOS `NSDateFormatter`) with platform-neutral `LocaleTag`; `LocalDate.relative(now): RelativeTime` returns a sealed bucket (`Today`, `Yesterday`, `Tomorrow`, `Days/Weeks/Months/YearsAgo`, `InDays/InWeeks/InMonths/InYears`) so presentation maps to localized strings. Covered by `TimeProviderTest`, `RelativeTimeTest`, `InstantFormatTest` (24/24 passing on JVM).
 
 ### Data (`core/data`)
 - ✅ SQLDelight wiring — `DatabaseDriverFactory` expect/actual (Android `AndroidSqliteDriver`, iOS `NativeSqliteDriver`, JVM `JdbcSqliteDriver` → `java.io.tmpdir`). `FlowQuery` extensions (`asFlowList`, `asFlowOne`, `asFlowOneOrNull`). `InstantColumnAdapter`, `LocalDateColumnAdapter`, `LocalDateTimeColumnAdapter`. `SqlDelightConventionPlugin` registered in build-logic. Schema files are intentionally client-owned — framework is driver-only.
