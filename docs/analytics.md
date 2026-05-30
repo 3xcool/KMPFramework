@@ -191,7 +191,7 @@ class FirebaseAnalyticsClient(
 
 You **don't** need to handle `Pii` — the `PolicyAnalyticsClient` decorator has already stripped or transformed every tagged value before your adapter is called.
 
-Adapters live in their own sub-modules (`framework/feature/analytics-firebase`, etc.) so the consuming app only pulls in the SDKs it actually uses. None ship yet — adding them is mechanical now that the interface is locked.
+**No vendor adapters ship with the framework.** Consuming apps own their `AnalyticsClient` implementation against whatever backend they choose — Firebase, Mixpanel, a custom in-house ingestor, etc. This keeps the framework vendor-neutral and avoids dragging vendor SDKs into transitive dependencies of every consumer. A custom in-house adapter is planned as a separate, app-side concern.
 
 ---
 
@@ -228,10 +228,11 @@ For policy-related assertions, wrap with `PolicyAnalyticsClient(recorder, somePo
 
 ## Roadmap (deferred from this PR)
 
-- **Adapters** — Firebase Analytics, Mixpanel, Amplitude as separate sub-modules.
-- **Multi-action DS components** — `DsAlert` / `DsBanner` / `DsDialog` / `DsSnackbar` / clickable `DsCard` get `analyticsId` per action.
-- **Kompass screen tracking** — auto-emit `analytics.screen(...)` when the `NavController` destination changes.
+- **Kompass screen tracking** — high priority. Auto-emit `analytics.screen(destination.id, …)` from `:framework:kompass` when the `NavController` destination changes; the consumer wires nothing per-screen once `Framework.start` is configured.
+- **Multi-action DS components** — `DsAlert` / `DsBanner` / `DsDialog` / `DsSnackbar` need per-target `analyticsId` params (primary / secondary / dismiss) so a dismissal emits a distinct event from the confirmation.
 - **Consent UI** — an opt-in dialog module (LGPD / GDPR) that toggles `PiiPolicy` at runtime once user consent is granted. Likely Phase 3.
+
+No vendor adapters (Firebase / Mixpanel / Amplitude) are planned — consumers own their adapter implementation. A custom in-house adapter for Tekmoon apps will be built later as a separate, app-side concern.
 
 ---
 
