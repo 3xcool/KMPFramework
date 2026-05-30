@@ -1,4 +1,4 @@
-package com.tekmoon.utilities.time
+package com.tekmoon.utilities.format
 
 /**
  * Platform-neutral locale identifier in BCP-47 form (e.g. `"en-US"`, `"pt-BR"`, `"ja-JP"`).
