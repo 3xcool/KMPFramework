@@ -1,5 +1,9 @@
 package com.tekmoon.framework
 
+import com.tekmoon.analytics.AnalyticsClient
+import com.tekmoon.analytics.NoOpAnalyticsClient
+import com.tekmoon.analytics.PiiPolicy
+import com.tekmoon.analytics.PolicyAnalyticsClient
 import com.tekmoon.data.FrameworkConfig
 import com.tekmoon.data.logging.SimpleLogger
 import com.tekmoon.data.networking.HttpClientFactory
@@ -72,6 +76,9 @@ object Framework {
     val config: FrameworkConfig.Snapshot
         get() = state.config
 
+    val analytics: AnalyticsClient
+        get() = state.analytics
+
     /**
      * Initializes every framework subsystem and returns a [FrameworkState] handle. Safe to call
      * multiple times — subsequent calls return the already-initialized state without re-running
@@ -102,11 +109,17 @@ object Framework {
         // 4. Dispatchers (default to StandardDispatchers; tests can inject)
         val dispatchers = init.dispatchers ?: StandardDispatchers
 
+        // 5. Analytics — wrap whatever client the consumer passed (or NoOp) with the configured
+        // PII policy so adapters never receive raw Pii values. LGPD-safe by default (DropAll).
+        val rawAnalytics = init.analyticsClient ?: NoOpAnalyticsClient
+        val analytics: AnalyticsClient = PolicyAnalyticsClient(rawAnalytics, init.piiPolicy)
+
         val newState = FrameworkState(
             config = FrameworkConfig.snapshot(),
             logger = logger,
             httpClient = httpClient,
             dispatchers = dispatchers,
+            analytics = analytics,
         )
         _state = newState
         return newState
@@ -132,6 +145,19 @@ data class FrameworkInit(
     val dispatchers: DispatcherProvider? = null,
     /** Override the default [LoggerConfig] to plug in custom writers (file, remote, breadcrumbs). */
     val loggerConfig: LoggerConfig? = null,
+    /**
+     * Underlying analytics adapter (Firebase, Mixpanel, [MultiAnalyticsClient][com.tekmoon.analytics.MultiAnalyticsClient], etc.).
+     * `null` (default) installs [com.tekmoon.analytics.NoOpAnalyticsClient]. Whatever you pass is wrapped with
+     * [PolicyAnalyticsClient] using [piiPolicy] before being exposed via [Framework.analytics] —
+     * adapters never see raw [com.tekmoon.analytics.Pii] values.
+     */
+    val analyticsClient: AnalyticsClient? = null,
+    /**
+     * LGPD-aware policy applied to every [com.tekmoon.analytics.Pii]-tagged property before it reaches the
+     * [analyticsClient]. Defaults to [PiiPolicy.DropAll] — safest before you have lawful basis
+     * for processing personal data.
+     */
+    val piiPolicy: PiiPolicy = PiiPolicy.DropAll,
 )
 
 /** Immutable handle to the initialized framework. */
@@ -140,6 +166,7 @@ data class FrameworkState internal constructor(
     val logger: ShowMeLoggerK,
     val httpClient: HttpClient,
     val dispatchers: DispatcherProvider,
+    val analytics: AnalyticsClient,
 )
 
 /**
