@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.DsColors
 import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
@@ -261,9 +262,19 @@ fun DsButton(
     backgroundColor: Color? = null,
     contentColor: Color? = null,
     borderColor: Color? = null,
+
+    /**
+     * Stable identifier emitted with the `"ds_button_clicked"` analytics event when this
+     * button is tapped. `null` (default) disables analytics for this instance — useful when
+     * the click handler itself already emits a more meaningful event.
+     */
+    analyticsId: String? = null,
+    /** Extra params merged into the analytics event payload alongside `id` + `text`. */
+    analyticsParams: Map<String, Any?> = emptyMap(),
 ) {
     val interaction = rememberButtonInteraction()
     val colors = DsTheme.colors
+    val analytics = LocalAnalytics.current
 
     val sizeSpec = resolveButtonSizeSpec(size)
 
@@ -277,12 +288,25 @@ fun DsButton(
 
     val style = applyInteractionOverlay(baseStyle, interaction, enabled)
 
+    val trackedClick: () -> Unit = if (analyticsId == null) onClick else {
+        {
+            analytics.track(
+                event = "ds_button_clicked",
+                params = mapOf(
+                    "id" to analyticsId,
+                    "text" to text,
+                ) + analyticsParams,
+            )
+            onClick()
+        }
+    }
+
     ButtonContainer(
         modifier = modifier,
         style = style,
         enabled = enabled && !loading,
         withHaptic = withHaptic,
-        onClick = onClick,
+        onClick = trackedClick,
         padding = sizeSpec.padding,
         minHeight = sizeSpec.minHeight
     ) {

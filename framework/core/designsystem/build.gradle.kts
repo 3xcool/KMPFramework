@@ -138,6 +138,8 @@ kotlin {
                 implementation(libs.bundles.ktor.common)
 
                 implementation(libs.kotlinx.collections.immutable)
+
+                api(projects.framework.feature.analytics)
             }
         }
 

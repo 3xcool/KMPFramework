@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
+import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.DsColors
 import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
@@ -87,10 +88,18 @@ fun DsIconButton(
     backgroundColor: Color? = null,
     contentColor: Color? = null,
     borderColor: Color? = null,
+    /**
+     * Stable identifier emitted with the `"ds_icon_button_clicked"` analytics event when
+     * this button is tapped. `null` (default) disables analytics for this instance.
+     */
+    analyticsId: String? = null,
+    /** Extra params merged into the analytics event payload alongside `id`. */
+    analyticsParams: Map<String, Any?> = emptyMap(),
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val isHovered by interactionSource.collectIsHoveredAsState()
+    val analytics = LocalAnalytics.current
 
     val sizeSpec = resolveSizeSpec(size)
     val shape    = sizeSpec.shape()
@@ -129,7 +138,15 @@ fun DsIconButton(
                 enabled = enabled,
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick,
+                onClick = if (analyticsId == null) onClick else {
+                    {
+                        analytics.track(
+                            event = "ds_icon_button_clicked",
+                            params = mapOf("id" to analyticsId) + analyticsParams,
+                        )
+                        onClick()
+                    }
+                },
             )
             .semantics { role = Role.Button }
     ) {

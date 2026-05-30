@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
+import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 
 /**
@@ -33,16 +34,34 @@ fun DsClickableText(
     color: Color = DsTheme.textColors.primary,
     hoverColor: Color = DsTheme.textColors.secondary,
     textAlign: TextAlign = TextAlign.Unspecified,
+    /**
+     * Stable identifier emitted with the `"ds_clickable_text_clicked"` analytics event when
+     * tapped. `null` (default) disables analytics — useful when [DsLinkText] is wrapping
+     * this (`DsLinkText` does its own tracking and explicitly passes `null` here).
+     */
+    analyticsId: String? = null,
+    analyticsParams: Map<String, Any?> = emptyMap(),
     onClick: () -> Unit,
 ) {
     var isHovered by remember { mutableStateOf(false) }
+    val analytics = LocalAnalytics.current
+
+    val trackedClick: () -> Unit = if (analyticsId == null) onClick else {
+        {
+            analytics.track(
+                event = "ds_clickable_text_clicked",
+                params = mapOf("id" to analyticsId) + analyticsParams,
+            )
+            onClick()
+        }
+    }
 
     DsText(
         text = text,
         modifier = modifier
             .pointerHoverIcon(Hand)
             .dsMinimumTouchTarget(48.dp)
-            .clickable(onClick = onClick)
+            .clickable(onClick = trackedClick)
             .semantics {
                 role = Role.Button
                 if (contentDescription != null) this.contentDescription = contentDescription
