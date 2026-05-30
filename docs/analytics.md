@@ -122,6 +122,36 @@ class CheckoutViewModel(
 
 Inject `Framework.analytics` at the construction site (typically your DI module). Tests pass `RecordingAnalyticsClient()` instead.
 
+### Screen-view tracking (Kompass)
+
+`TrackScreenViews(navController)` wires `analytics.screen(...)` to Kompass navigation. Drop it once next to the `NavigationHost` and every destination change emits a screen event — no per-screen boilerplate.
+
+```kotlin
+@Composable
+fun App() {
+    val navController = rememberNavController(start = MainGraph.Home)
+
+    CompositionLocalProvider(LocalAnalytics provides Framework.analytics) {
+        DsTheme {
+            TrackScreenViews(navController)         // ← single line wires every screen
+            NavigationHost(navController, ...)
+        }
+    }
+}
+```
+
+Emitted event:
+- **name**: the new top-most `destinationId` (e.g. `"kompass/main/home"`)
+- **params**: `{ "from": <previous destinationId or null> }` — `null` on the cold-start landing
+
+Behavior:
+- The initial landing screen emits exactly once with `previous = null`.
+- Consecutive entries with the same `destinationId` (e.g. when only `scopeId` changes) are coalesced — only true destination transitions fire.
+- `pop()` emits the uncovered destination.
+- Empty back-stack states (post-corruption fallback) are skipped rather than emitted as malformed.
+
+Pass `analytics = …` explicitly if you have multiple clients in scope (e.g. a test recorder).
+
 ### At call sites — composables
 
 The design system provides a `LocalAnalytics` CompositionLocal. Set it once at the root of your composition, then `Ds*` primitives forward events automatically when you provide an `analyticsId`:
@@ -228,7 +258,6 @@ For policy-related assertions, wrap with `PolicyAnalyticsClient(recorder, somePo
 
 ## Roadmap (deferred from this PR)
 
-- **Kompass screen tracking** — high priority. Auto-emit `analytics.screen(destination.id, …)` from `:framework:kompass` when the `NavController` destination changes; the consumer wires nothing per-screen once `Framework.start` is configured.
 - **Multi-action DS components** — `DsAlert` / `DsBanner` / `DsDialog` / `DsSnackbar` need per-target `analyticsId` params (primary / secondary / dismiss) so a dismissal emits a distinct event from the confirmation.
 - **Consent UI** — an opt-in dialog module (LGPD / GDPR) that toggles `PiiPolicy` at runtime once user consent is granted. Likely Phase 3.
 
