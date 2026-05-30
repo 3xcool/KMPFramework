@@ -48,8 +48,8 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ✅ Accessibility audit pass — required `contentDescription` parameters on every interactive primitive (DsAlert dismiss, DsClickableText/DsLinkText, DsTextField password toggle), Role.Button semantics throughout, `dsMinimumTouchTarget(48.dp)` wrapper enforcing tap regions on Small/Medium variants without changing visuals, and `LocalDsFontScale` bridging iOS `UIContentSizeCategory` into DsTheme typography (Android/JVM let Compose `.sp` handle OS scaling natively).
 
 ### Localization / i18n
-- ⏳ Document supported-languages list + fallback strategy.
-- ⏳ Locale-aware formatting helpers (date, number, currency) — coordinates with the Date/Time work in Utilities.
+- ✅ Document supported-languages list + fallback strategy — see [docs/localization.md](localization.md). Covers framework vs. app responsibility split, `LocaleTag` (BCP-47 wrapper), the three-layer fallback (framework empty-tag → platform BCP-47 chain → app string-resource fallback), and `UiText` as the bridge to translated copy.
+- ✅ Locale-aware formatting helpers — date is covered by `Instant.format` (above). Number / currency added in `com.tekmoon.utilities.format`: `Double.formatNumber(locale, fractionDigits, useGrouping)`, `Long.formatNumber(locale, useGrouping)`, `Double.formatCurrency(currencyCode, locale)` via expect/actual (Android/JVM `NumberFormat` + ISO 4217 `Currency.defaultFractionDigits` override; iOS `NSNumberFormatter`). Covered by `NumberFormatTest` (10/10 passing).
 
 ### SDK / Public API (`framework/sdk`)
 - ✅ `framework/sdk` is now a real bootstrap surface — `Framework.start(FrameworkInit)` is the single entry point (see Configuration / Bootstrap above).
@@ -62,6 +62,7 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 ### Analytics (`framework/feature/analytics`)
 - ⏳ `expect class AnalyticsClient { fun track(event: String, params: Map<String, Any?>) }`.
 - ⏳ Adapters: Firebase Analytics, Mixpanel, Amplitude.
+- ⏳ TestTag vs our Custom way to collect click events
 
 ### Storage (new module `framework/core/storage`)
 - ⏳ `expect class SecureStore` — Android EncryptedSharedPreferences/Keystore, iOS Keychain, JVM Secret Service / Keychain. Consumed by Auth.Cryptography.
