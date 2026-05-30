@@ -179,16 +179,24 @@ fun HomeScreen() {
 
 Events emitted by the design system today:
 
-| Component | Event | Default params (besides your `analyticsParams`) |
-|---|---|---|
-| `DsButton` | `ds_button_clicked` | `id`, `text` |
-| `DsIconButton` | `ds_icon_button_clicked` | `id` |
-| `DsClickableText` | `ds_clickable_text_clicked` | `id` |
-| `DsLinkText` | `ds_link_clicked` | `id`, `url` |
+| Component | Action | Event | Default params (besides your `analyticsParams`) | Param name |
+|---|---|---|---|---|
+| `DsButton` | click | `ds_button_clicked` | `id`, `text` | `analyticsId` |
+| `DsIconButton` | click | `ds_icon_button_clicked` | `id` | `analyticsId` |
+| `DsClickableText` | click | `ds_clickable_text_clicked` | `id` | `analyticsId` |
+| `DsLinkText` | click | `ds_link_clicked` | `id`, `url` | `analyticsId` |
+| `DsAlert` | dismiss | `ds_alert_dismissed` | `id`, `type` | `dismissAnalyticsId` |
+| `DsBanner` | primary | `ds_banner_primary_clicked` | `id`, `type`, `label` | `primaryAnalyticsId` |
+| `DsBanner` | secondary | `ds_banner_secondary_clicked` | `id`, `type`, `label` | `secondaryAnalyticsId` |
+| `DsBanner` | dismiss | `ds_banner_dismissed` | `id`, `type` | `dismissAnalyticsId` |
+| `DsDialogWeb` / `DsDialogMaterial` | confirm | `ds_dialog_confirmed` | `id`, `title` | `confirmAnalyticsId` |
+| `DsDialogWeb` / `DsDialogMaterial` | cancel | `ds_dialog_cancelled` | `id`, `title` | `cancelAnalyticsId` |
+| `DsDialogWeb` / `DsDialogMaterial` | scrim / dismiss | `ds_dialog_dismissed` | `id`, `title` | `dismissAnalyticsId` |
+| `DsSnackbar` | action | `ds_snackbar_action_clicked` | `id`, `type`, `label` | `analyticsId` on `DsSnackbarMessage` |
 
 `DsLinkText` does its own tracking and explicitly passes `analyticsId = null` to the wrapped `DsClickableText` so you never get a duplicate event.
 
-Multi-action components (`DsAlert`, `DsBanner`, `DsDialog`, `DsSnackbar`, clickable `DsCard`) will get the same treatment in a follow-up.
+Multi-action components share a single `analyticsParams` map across every target so cross-cutting tags (screen, module, user state) don't have to be repeated per target.
 
 ---
 
@@ -256,9 +264,8 @@ For policy-related assertions, wrap with `PolicyAnalyticsClient(recorder, somePo
 
 ---
 
-## Roadmap (deferred from this PR)
+## Roadmap (deferred)
 
-- **Multi-action DS components** — `DsAlert` / `DsBanner` / `DsDialog` / `DsSnackbar` need per-target `analyticsId` params (primary / secondary / dismiss) so a dismissal emits a distinct event from the confirmation.
 - **Consent UI** — an opt-in dialog module (LGPD / GDPR) that toggles `PiiPolicy` at runtime once user consent is granted. Likely Phase 3.
 
 No vendor adapters (Firebase / Mixpanel / Amplitude) are planned — consumers own their adapter implementation. A custom in-house adapter for Tekmoon apps will be built later as a separate, app-side concern.
