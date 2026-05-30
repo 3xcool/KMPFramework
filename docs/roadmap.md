@@ -23,7 +23,7 @@ Companion to [architecture-overview.md](architecture-overview.md) and [architect
 Cross-cutting building blocks that the rest of the framework depends on. All commonMain — should be doable without running on a device.
 
 ### Configuration / Bootstrap
-- ⏳ `Framework.start(config: FrameworkConfig.Init)` in `framework/sdk` — single entry point that initializes `FrameworkConfig`, `ShowMeLoggerK`, `HttpClientFactory`, and (later) analytics + crash reporting. Once this exists, the `println(...)` fallbacks in `CommonViewModel` can be removed.
+- ✅ `Framework.start(FrameworkInit)` in `framework/sdk` — single idempotent entry point that initializes `FrameworkConfig` + `ShowMeLoggerK` (via `Loggers.install`) + `HttpClientFactory` + `DispatcherProvider`, returns an immutable `FrameworkState`, and exposes `Framework.logger` / `httpClient` / `dispatchers` / `config` accessors. `reset()` for tests. Analytics + crash-reporting wiring is deferred until those Phase 3 modules land.
 
 ### Domain (`core/domain`)
 - ✅ `Resource<T>` wrapper — `sealed interface Resource<T>`: `Idle | Loading | Success(data) | Paginating(data) | Error(errorType, message?, data?)`. Repositories return `Flow<Resource<T>>`; ViewModels collect into `StateFlow`. `DataError` unified into open interface hierarchy (`ClientError`, `ServerError`, `NoInternet`, `Serialization`, `LocalError`, `UnknownError`).
@@ -40,39 +40,45 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ✅ HTTP interceptor for auth header injection + retry, plumbed through `HttpClientFactory`. `TokenProvider` interface, `TokenGate` (single-flight mutex with snapshot-before-wait thundering-herd protection), `AuthEvent.SessionExpired` via `SharedFlow`, `NoAuth` opt-out attribute.
 
 ### Session (`core/session`)
-
-Module placement is intentional and stays as `core/session` — it is a pure in-memory orchestration primitive (no I/O of its own; sources are feature-provided via `DataSessionSource`), but it pulls in `androidx.lifecycle.viewmodel.savedstate`, which doesn't belong in `core/domain`. Keeping it separate also avoids forcing every `core/domain` consumer to inherit the editing-flow surface.
-
-- ⏳ Move store I/O off the Main dispatcher in `DataSessionImpl`. The session scope is built on `dispatchers.mainImmediate`, so the bodies of `updateDraft` / `updateInitialAndDraft` / `commit(model)` / `commit(reducer)` / `syncRemoteChange` / `discardDraft` / `updateSavedState` currently run their store calls (`draftStore.save` / `draftStore.clear` / `savedStateStore.update`) and `source.saveLocal` on Main — disk-backed or otherwise blocking implementations would jank the UI. Wrap the store/source calls (not the whole mutex critical section, and not `_state.update`) in `withContext(dispatchers.io)`. Add a `FakeDraftStore` / `FakeSavedStateStore` test that asserts the calling dispatcher when `save` / `update` / `clear` / `saveLocal` are invoked.
+- ✅ Store I/O dispatched on `dispatchers.io` — `updateDraft` / `updateInitialAndDraft` / `commit(model)` / `commit(reducer)` / `syncRemoteChange` / `discardDraft` / `updateSavedState` and the suspend `clearSession` wrap their `draftStore` / `savedStateStore` / `source.saveLocal` calls in `withContext(dispatchers.io)`. The mutex critical section and `MutableStateFlow` updates stay on the launching dispatcher. Verified by `DataSessionImplDispatcherTest` (8/8 passing).
 
 ### UI components (`core/designsystem/components`)
 - ✅ `DsBanner` — full-width prominent prompt with Info/Success/Warning/Danger types, required primary action, optional secondary action, optional dismiss (required `dismissContentDescription` when dismissable). Leading accent stripe, type-tinted background.
 - ✅ `DsToast` + `DsToastHost` — transient themed feedback, no action. `DsToastController` + `rememberDsToastController` mirror the snackbar pattern. Each `show()` fires `PlatformAccessibility.announce()` so TalkBack/VoiceOver read the message, and the host marks itself as a `LiveRegionMode.Polite` semantics region for belt-and-suspenders coverage.
 - ✅ Accessibility audit pass — required `contentDescription` parameters on every interactive primitive (DsAlert dismiss, DsClickableText/DsLinkText, DsTextField password toggle), Role.Button semantics throughout, `dsMinimumTouchTarget(48.dp)` wrapper enforcing tap regions on Small/Medium variants without changing visuals, and `LocalDsFontScale` bridging iOS `UIContentSizeCategory` into DsTheme typography (Android/JVM let Compose `.sp` handle OS scaling natively).
 
-### Logging
-- ⏳ `framework/logger-file` — new sub-module. `FileLogWriter` implementing `LogWriter`, writing a rolling log file in the platform cache directory (Android `cacheDir`, iOS `NSCachesDirectory`, JVM `System.getProperty("java.io.tmpdir")`). Kept separate so the engine stays free of file-I/O deps.
-- ⏳ `framework/logger-remote` — new sub-module. `RemoteLogWriter` that batches + ships logs via `core/data`'s `HttpClient`. Kept separate so the engine doesn't pull in networking.
-
 ### Localization / i18n
 - ⏳ Document supported-languages list + fallback strategy.
 - ⏳ Locale-aware formatting helpers (date, number, currency) — coordinates with the Date/Time work in Utilities.
 
 ### SDK / Public API (`framework/sdk`)
-- ⏳ Expand `framework/sdk` from "umbrella module" to a real bootstrap surface (see Configuration above).
+- ✅ `framework/sdk` is now a real bootstrap surface — `Framework.start(FrameworkInit)` is the single entry point (see Configuration / Bootstrap above).
+
+### Background Work (`framework/feature/background-work`)
+- ⏳ `expect class BackgroundScheduler` with `schedule(task: BackgroundTask)`.
+- ⏳ Android actual via WorkManager.
+- 🧪 iOS actual via `BGTaskScheduler` — Phase 4 (device testing).
+
+### Analytics (`framework/feature/analytics`)
+- ⏳ `expect class AnalyticsClient { fun track(event: String, params: Map<String, Any?>) }`.
+- ⏳ Adapters: Firebase Analytics, Mixpanel, Amplitude.
+
+### Storage (new module `framework/core/storage`)
+- ⏳ `expect class SecureStore` — Android EncryptedSharedPreferences/Keystore, iOS Keychain, JVM Secret Service / Keychain. Consumed by Auth.Cryptography.
+- ⏳ `expect class FileStorage` — downloads / attachments directory abstraction.
+- ⏳ `expect class Preferences` — `multiplatform-settings` or DataStore-equivalent.
 
 ## Phase 2 — Core Utils (common code only, platform actuals deferred)
+
+### Logging
+- ⏳ `framework/logger-file` — new sub-module. `FileLogWriter` implementing `LogWriter`, writing a rolling log file in the platform cache directory (Android `cacheDir`, iOS `NSCachesDirectory`, JVM `System.getProperty("java.io.tmpdir")`). Kept separate so the engine stays free of file-I/O deps.
+- ⏳ `framework/logger-remote` — new sub-module. `RemoteLogWriter` that batches + ships logs via `core/data`'s `HttpClient`. Kept separate so the engine doesn't pull in networking.
 
 ### Connectivity (new module `framework/core/connectivity`)
 - ⏳ `expect class ConnectivityObserver` with `val status: Flow<ConnectionStatus>` (`Available` / `Unavailable` / `Losing` / `Lost`).
 - ⏳ Android actual via `ConnectivityManager.NetworkCallback`.
 - ⏳ Desktop JVM actual via `InetAddress.isReachable` polling fallback.
 - 🧪 iOS actual via `NWPathMonitor` — needs device testing (Phase 4).
-
-### Storage (new module `framework/core/storage`)
-- ⏳ `expect class SecureStore` — Android EncryptedSharedPreferences/Keystore, iOS Keychain, JVM Secret Service / Keychain. Consumed by Auth.Cryptography.
-- ⏳ `expect class FileStorage` — downloads / attachments directory abstraction.
-- ⏳ `expect class Preferences` — `multiplatform-settings` or DataStore-equivalent.
 
 ## Phase 3 — Core Features (new modules)
 
@@ -84,10 +90,6 @@ Each feature lives in `framework/feature/<name>` and is re-exported through `fra
 - ⏳ `AuthRepository` — login / logout / register, returns `Result<User, DataError.Remote>`.
 - ⏳ `SessionManager` — observable `SessionState` (`Flow<SessionState>`), forced sign-out on refresh failure.
 - ⏳ Cryptography wrapper around `core/storage`'s `SecureStore`.
-
-### Analytics (`framework/feature/analytics`)
-- ⏳ `expect class AnalyticsClient { fun track(event: String, params: Map<String, Any?>) }`.
-- ⏳ Adapters: Firebase Analytics, Mixpanel, Amplitude.
 
 ### Device (`framework/feature/device`)
 - ⏳ `expect val deviceInfo: DeviceInfo` exposing `osName`, `osVersion`, `model`, `manufacturer`, `appVersion`.
@@ -109,11 +111,6 @@ Each feature lives in `framework/feature/<name>` and is re-exported through `fra
 - ⏳ `expect class FeatureFlagClient { fun <T> get(key, default): T; fun observe(key): Flow<T> }`.
 - ⏳ Adapters: Firebase Remote Config, ConfigCat, GrowthBook.
 - ⏳ Default-value registration at startup so the app always has a fallback before the first sync.
-
-### Background Work (`framework/feature/background-work`)
-- ⏳ `expect class BackgroundScheduler` with `schedule(task: BackgroundTask)`.
-- ⏳ Android actual via WorkManager.
-- 🧪 iOS actual via `BGTaskScheduler` — Phase 4 (device testing).
 
 ### App Update / In-app Review (`framework/feature/app-update`)
 - ⏳ Force / soft update flow driven by `min_supported_version` / `recommended_version` flags from Feature Flags.
@@ -209,8 +206,7 @@ The framework has **no unit tests across the ported / new modules.** This is the
 
 ## Quick wins (small, do-anytime)
 
-- ⏳ Once `Framework.start()` guarantees a `ShowMeLoggerK`, remove the `println(...)` fallbacks in `CommonViewModel` and `PermissionsViewModel.logSafe`.
-- ⏳ Move `Screen Size` from `core/presentation/DeviceScreenConfiguration.kt` to `core/utils` (listed under Utilities above — small enough to do whenever).
+- ✅ `println(...)` fallbacks were never introduced — `CommonViewModel` and `PermissionsViewModel.logSafe` use the nullable `logger?.e(...)` / `logger?.d(...)` no-op pattern. `Framework.start()` installs a `ShowMeLoggerK` via `Loggers.install()` so bootstrapped consumers get real logging.
 - ⏳ Add KDoc headers to ported types that came from Cantina without doc comments (most are documented, a few sparse).
 - ⏳ Verify the new `core/permissions`, `core/session`, and `core/media` modules are picked up by the `framework/sdk` umbrella in IDE indexing (the `api(...)` lines are in `sdk/build.gradle.kts`).
 - ⏳ Tag the framework `0.0.2` once Phase 1 closes — `Framework.VERSION` already exists in `framework/sdk/.../Framework.kt`.
