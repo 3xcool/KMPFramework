@@ -25,15 +25,16 @@ See `.claude/skills/` for detailed guidance:
 
 - `tekmoon-kompass-navigation` — Navigation patterns
 - `tekmoon-design-system` — Theme and components
-- `tekmoon-feature-scaffold` — Creating new feature modules + NavigationGraph wiring
+- `tekmoon-feature-scaffold` — Creating new feature modules end to end (+ MVI screens)
 - `tekmoon-feature-mvi` — Per-screen MVI (Domain/ViewModel/Screen) on `CommonViewModel`
 - `tekmoon-project-structure` — Module layout and build system
+- `detekt-fix` — Resolve detekt/lint violations
 - `caffeinate` — Prevent macOS sleep during long builds
 - `7rule` — Baseline working discipline
 - `git-commit` — Atomic Conventional Commits
-- `git-pr` — Push a feature branch and open a PR for review (supersedes the old "never push" rule; protected branches stay off-limits)
+- `git-pr` — branch → push → PR → note → merge develop (supersedes the old "never push" rule; `main` stays protected)
 
-Sub-agents in `.claude/agents/`: code-explorer, feature-scaffolder, build-verifier, reviewer, detekt-fixer, pr-manager, context-guardian.
+Sub-agents in `.claude/agents/`: code-explorer, build-verifier, reviewer, context-guardian.
 
 ## Git workflow
 
