@@ -5,7 +5,12 @@ import com.tekmoon.kompass.BackStackEntry
 import com.tekmoon.kompass.Destination
 import com.tekmoon.kompass.NavigationGraph
 
-import androidx.compose.animation.*
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
