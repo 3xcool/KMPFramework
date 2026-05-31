@@ -1,11 +1,8 @@
 name: PR Quality
 
-# CI backstop for the PR-review workflow: on every PR to develop/main, compile and
-# test so a reviewer sees a green/red check before reading the diff. No local
-# Android toolchain needed to review.
-#
-# Note: detekt/ktlint are not configured in this repo, so there is no lint step.
-# Add one if/when a static-analysis tool is introduced.
+# CI backstop for the PR-review workflow: on every PR to develop/main, run detekt,
+# compile, and test so a reviewer sees a green/red check before reading the diff.
+# No local Android toolchain needed to review.
 
 on:
   pull_request:
@@ -32,6 +29,9 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Detekt (lint / static analysis)
+        run: ./gradlew detekt
 
       - name: Compile (JVM)
         run: ./gradlew compileKotlinJvm

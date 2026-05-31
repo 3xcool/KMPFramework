@@ -25,6 +25,7 @@ class KmpLibraryConventionPlugin: Plugin<Project> {
                 apply("org.jetbrains.kotlin.multiplatform")
                 apply("org.jetbrains.kotlin.plugin.serialization")
                 apply("com.tekmoon.convention.maven.publish")
+                apply("com.tekmoon.convention.detekt")
             }
 
             configureKotlinMultiplatform()
