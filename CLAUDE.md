@@ -39,8 +39,9 @@ Sub-agents in `.claude/agents/`: code-explorer, feature-scaffolder, build-verifi
 
 - After any file creation or edit, run `git add` on the touched files (or `git add -A` from the project root) so the working tree stays staged.
 - Commits are allowed when I ask for them (e.g. "commit this") or under the Autonomous Agent Protocol below. Use Conventional Commit messages (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`).
-- Pushing is allowed for **`feature/*` branches only**, via the `git-pr` skill (`git push -u origin feature/<name>`) — used to open a PR for my review on GitHub. **NEVER push to `main` or `develop`.**
-- Opening a pull request (GitHub MCP, or `gh pr create --base develop`) is allowed. The feature → develop → main MERGE stays MY decision.
+- Pushing `feature/*` branches is allowed via the `git-pr` skill (`git push -u origin feature/<name>`).
+- Merging into `develop` is allowed — open a PR targeting `develop` and merge it (Git Flow), or merge the feature branch into `develop` directly. You may push to `develop`.
+- **`main` is protected and MINE.** NEVER push to `main`, merge into `main`, or approve/merge a PR targeting `main`. The `develop → main` promotion is my exclusive decision.
 - If `git add` reports an error (e.g. the file is gitignored), just continue; do not stop to report it.
 
 ## Autonomous Agent Protocol
@@ -76,9 +77,9 @@ Before writing any code, create a feature branch from an up-to-date `develop`:
 
 ### Hard limits (never do these)
 
-- Push ONLY `feature/*` branches (via the `git-pr` skill), and only to open a PR for my review. NEVER push to `main` or `develop`.
-- NEVER commit to `main` or `develop` directly.
-- NEVER merge into `main`. You MAY merge `develop` into your feature branch to stay current, but the feature → develop → main flow is MY decision, done by me.
+- Do real work on `feature/*` branches; push them via the `git-pr` skill.
+- Merging `feature/*` into `develop` is allowed (PR to `develop` then merge, or a direct Git Flow merge). You may push to `develop`.
+- **NEVER push to, commit to, or merge into `main`.** Never approve/merge a PR targeting `main`. The `develop → main` promotion is MINE alone.
 - NEVER force-push, hard-reset, or run `git clean`.
 - NEVER delete files in bulk or run destructive shell commands.
 - NEVER touch signing material (`*.jks`, `*.keystore`, `keystore.properties`) or any `.env` file.
