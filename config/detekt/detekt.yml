@@ -31,9 +31,13 @@ style:
   ReturnCount:
     max: 4
   MaxLineLength:
-    maxLineLength: 120
+    maxLineLength: 140                # bumped from 120 — Compose modifier chains
   UnusedPrivateMember:
     active: true
+  UnusedParameter:
+    # Composables accept modifier/onClick etc. for API consistency even when
+    # the body doesn't reference them.
+    ignoreAnnotated: ['Composable']
   ForbiddenComment:
     active: false                     # TODO/FIXME are allowed in WIP
 
@@ -44,6 +48,10 @@ naming:
     ignoreAnnotated: ['Composable']
   TopLevelPropertyNaming:
     active: true
+  MatchingDeclarationName:
+    # KMP expect/actual layouts (e.g. PlatformCursor.android.kt declaring
+    # actualCursor) intentionally don't match the filename.
+    active: false
 
 # Note: there is no built-in `compose` ruleset in detekt; Compose-specific rule
 # packs (e.g. detekt-compose) can be added as a detektPlugin later if desired.
@@ -53,9 +61,12 @@ formatting:
   android: true
   autoCorrect: false
   MaximumLineLength:
-    maxLineLength: 120
+    maxLineLength: 140
   FunctionName:
     ignoreAnnotated: ['Composable']
+  Filename:
+    # Same KMP expect/actual concern as naming.MatchingDeclarationName.
+    active: false
 
   # --- Group A: purely cosmetic rules disabled ---
   # These rules report style/whitespace concerns that don't catch bugs and
