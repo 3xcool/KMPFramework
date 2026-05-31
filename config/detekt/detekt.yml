@@ -56,3 +56,51 @@ formatting:
     maxLineLength: 120
   FunctionName:
     ignoreAnnotated: ['Composable']
+
+  # --- Group A: purely cosmetic rules disabled ---
+  # These rules report style/whitespace concerns that don't catch bugs and
+  # frequently collide with intentional formatting (column alignment, Compose
+  # call style, Kotlin DSL builders). They are off by deliberate choice; the
+  # bug-catching formatting rules (NoUnusedImports, NoWildcardImports) stay on.
+  NoMultipleSpaces:
+    active: false
+  NewLineAtEndOfFile:
+    active: false
+  FinalNewline:
+    active: false
+  NoConsecutiveBlankLines:
+    active: false
+  MultiLineIfElse:
+    active: false
+  ArgumentListWrapping:
+    active: false
+  ImportOrdering:
+    active: false
+  Wrapping:
+    active: false
+  NoEmptyFirstLineInMethodBlock:
+    active: false
+  Indentation:
+    active: false
+  SpacingAroundColon:
+    active: false
+  FunctionStartOfBodySpacing:
+    active: false
+  CommentSpacing:
+    active: false
+  SpacingBetweenDeclarationsWithComments:
+    active: false
+  SpacingAroundCurly:
+    active: false
+  SpacingAroundKeyword:
+    active: false
+  SpacingAroundOperators:
+    active: false
+  NoBlankLineBeforeRbrace:
+    active: false
+  EmptyDefaultConstructor:
+    active: false
+  SpacingAroundParens:
+    active: false
+  StringTemplate:
+    active: false
