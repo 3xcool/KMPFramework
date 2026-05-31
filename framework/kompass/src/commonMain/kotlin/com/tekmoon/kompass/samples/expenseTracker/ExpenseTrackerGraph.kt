@@ -1,3 +1,8 @@
+@file:Suppress("LongMethod")
+// Sample graph that exercises Kompass features in a single readable file;
+// ExpenseDetailScreen's body is a small UI tree slightly over the 80-line
+// limit and splitting it would obscure the example's purpose.
+
 package com.tekmoon.kompass.samples.expenseTracker
 
 import androidx.compose.foundation.background
@@ -20,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton

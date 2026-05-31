@@ -1,3 +1,7 @@
+@file:Suppress("LongMethod")
+// DsDialog ships two platform variants (Material and Web). Both bodies are
+// straight Compose layout trees whose length is structural, not behavioral.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.foundation.background

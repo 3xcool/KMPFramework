@@ -1,3 +1,8 @@
+@file:Suppress("LongMethod")
+// Compose composables are intrinsically long because the body is the layout
+// tree. Extracting children would fragment the visual structure rather than
+// improve it.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.foundation.background

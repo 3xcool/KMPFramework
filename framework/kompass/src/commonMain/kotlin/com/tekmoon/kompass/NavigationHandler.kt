@@ -100,12 +100,11 @@ class NavigationHandler() {
                     }
 
                 // Attach navigation result (only for single pop)
+                val isSinglePopWithResult = command.result != null &&
+                    command.count == 1 &&
+                    command.popUntil == null
                 val finalStack =
-                    if (command.result != null &&
-                        command.count == 1 &&
-                        command.popUntil == null &&
-                        newStack.isNotEmpty()
-                    ) {
+                    if (isSinglePopWithResult && newStack.isNotEmpty()) {
                         val popped = stack.last()
                         val key = popped.pendingResultKey
 

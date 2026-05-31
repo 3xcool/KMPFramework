@@ -1,3 +1,9 @@
+@file:Suppress("LongMethod")
+// rememberCameraLauncher composes Activity-result launchers, camera/video
+// branches, FileProvider setup, and cleanup callbacks into a single state
+// holder. Splitting it would scatter the launcher bookkeeping that's clearer
+// kept together.
+
 package com.tekmoon.media.camera
 
 import android.app.Activity

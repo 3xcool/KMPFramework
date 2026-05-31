@@ -151,12 +151,13 @@ private class NavigationStateSerializer(
                 }
             }
             NavigationState(backStack)
-        } catch (@Suppress("TooGenericExceptionCaught", "PrintStackTrace") e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             // Deserializing a stored NavigationState can throw a variety of
             // parser errors when the persisted format is older or corrupted.
             // We log to stderr (Kompass has no logger dependency) and return
             // an empty state so the host app can fall back to its default
             // destination.
+            @Suppress("PrintStackTrace")
             e.printStackTrace()
             NavigationState(persistentListOf())
         }

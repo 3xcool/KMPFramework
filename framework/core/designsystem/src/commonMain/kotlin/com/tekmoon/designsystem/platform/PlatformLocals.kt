@@ -1,4 +1,9 @@
+@file:Suppress("EmptyFunctionBlock")
+
 package com.tekmoon.designsystem.platform
+
+// Empty function bodies are intentional: these CompositionLocal defaults
+// are no-op implementations used when no real platform service is provided.
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp

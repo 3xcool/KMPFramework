@@ -118,6 +118,9 @@ private object Sample4Graph : NavigationGraph {
  * States
  * ------------------------------------------- */
 
+// Sample illustrating per-scope state; init and onCleared() are deliberate
+// empty hooks shown for documentation of where lifecycle code would live.
+@Suppress("EmptyInitBlock", "EmptyFunctionBlock")
 class Screen4State {
     var counter by mutableStateOf(0)
 
@@ -128,6 +131,7 @@ class Screen4State {
     }
 }
 
+@Suppress("EmptyInitBlock", "EmptyFunctionBlock")
 private class Sample4SharedState {
     var counter by mutableStateOf(0)
 
