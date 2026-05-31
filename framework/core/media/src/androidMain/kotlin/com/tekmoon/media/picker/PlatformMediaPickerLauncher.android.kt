@@ -136,7 +136,10 @@ private suspend fun pickMedia(
                 try { retriever.release() } catch (_: Exception) {}
             }
         }
-    } catch (e: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        // Picker metadata extraction orchestrates BitmapFactory + MediaMetadata
+        // calls whose failure modes vary by file format. Missing metadata is
+        // acceptable here — the picked file itself is still returned below.
         e.printStackTrace()
     }
 

@@ -107,7 +107,7 @@ suspend inline fun <reified T> responseToResult(response: HttpResponse): Result<
         in 200..299 -> {
             try {
                 Result.Success(response.body<T>())
-            } catch (e: NoTransformationFoundException) {
+            } catch (_: NoTransformationFoundException) {
                 Result.Failure(Serialization)
             }
         }

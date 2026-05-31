@@ -9,7 +9,8 @@ import kotlinx.serialization.json.Json
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Button
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import com.tekmoon.kompass.DeepLinkChannel
 import com.tekmoon.kompass.Destination
 import com.tekmoon.kompass.NavigationGraph

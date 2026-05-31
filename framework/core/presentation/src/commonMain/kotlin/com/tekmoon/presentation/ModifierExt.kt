@@ -3,12 +3,9 @@ package com.tekmoon.presentation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.composed
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.composed
 
 fun Modifier.clickableWithoutIndication(onClick: () -> Unit) = composed {
     val interactionSource = remember { MutableInteractionSource() }

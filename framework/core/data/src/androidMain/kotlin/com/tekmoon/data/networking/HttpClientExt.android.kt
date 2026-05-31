@@ -23,19 +23,22 @@ actual suspend fun <T> platformSafeCall(
     return try {
         val response = execute()
         handleResponse(response)
-    } catch (e: UnknownHostException) {
+    } catch (_: UnknownHostException) {
         Result.Failure(NoInternet)
-    } catch (e: UnresolvedAddressException) {
+    } catch (_: UnresolvedAddressException) {
         Result.Failure(NoInternet)
-    } catch (e: ConnectException) {
+    } catch (_: ConnectException) {
         Result.Failure(NoInternet)
-    } catch (e: SocketTimeoutException) {
+    } catch (_: SocketTimeoutException) {
         Result.Failure(ClientError.Timeout)
-    } catch (e: HttpRequestTimeoutException) {
+    } catch (_: HttpRequestTimeoutException) {
         Result.Failure(ClientError.Timeout)
-    } catch (e: SerializationException) {
+    } catch (_: SerializationException) {
         Result.Failure(Serialization)
-    } catch (e: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        // Final safety net: any unexpected exception is mapped to UnknownError
+        // while preserving the cause via UnknownError(e). Coroutine cancellation
+        // is re-thrown via ensureActive() so it can't be silently swallowed here.
         coroutineContext.ensureActive()
         Result.Failure(UnknownError(e))
     }

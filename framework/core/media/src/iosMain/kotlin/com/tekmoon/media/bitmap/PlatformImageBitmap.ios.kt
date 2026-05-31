@@ -43,7 +43,10 @@ actual suspend fun loadImageBitmap(source: ImageSource, context: Any?): ImageBit
             } ?: return@withContext null
 
             SkiaImage.makeFromEncoded(bytes).toComposeImageBitmap()
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+            // Skia decoding can throw a variety of low-level errors (malformed
+            // bytes, OOM, unsupported format). Any failure should fall back to
+            // null rather than crash the caller.
             null
         }
     }
@@ -99,7 +102,9 @@ actual fun compressImageToJpeg(
         }
         val q = quality.coerceIn(0, 100)
         scaled.encodeToData(EncodedImageFormat.JPEG, q)?.bytes ?: bytes
-    } catch (e: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+        // Skia encode/scale can throw on bad input or memory pressure. Falling
+        // back to the original bytes lets the caller still produce something.
         bytes
     }
 }

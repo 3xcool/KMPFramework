@@ -1,3 +1,9 @@
+@file:Suppress("CyclomaticComplexMethod")
+// resolveButtonStyle maps every (variant × state × theme) combination to its
+// style values. The cyclomatic complexity reflects the cartesian product of
+// design-token combinations — splitting into smaller helpers would not reduce
+// the actual branch count, just scatter it across more functions.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.foundation.background

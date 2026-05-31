@@ -1,3 +1,7 @@
+@file:Suppress("CyclomaticComplexMethod")
+// resolveIconButtonStyle mirrors DsButton.resolveButtonStyle: a flat
+// (variant × state × theme) decision table. See DsButton.kt for rationale.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.foundation.background

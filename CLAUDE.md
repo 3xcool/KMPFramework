@@ -25,14 +25,23 @@ See `.claude/skills/` for detailed guidance:
 
 - `tekmoon-kompass-navigation` — Navigation patterns
 - `tekmoon-design-system` — Theme and components
-- `tekmoon-feature-scaffold` — Creating new features
+- `tekmoon-feature-scaffold` — Creating new feature modules + NavigationGraph wiring
+- `tekmoon-feature-mvi` — Per-screen MVI (Domain/ViewModel/Screen) on `CommonViewModel`
 - `tekmoon-project-structure` — Module layout and build system
+- `caffeinate` — Prevent macOS sleep during long builds
+- `7rule` — Baseline working discipline
+- `git-commit` — Atomic Conventional Commits
+- `git-pr` — Push a feature branch and open a PR for review (supersedes the old "never push" rule; protected branches stay off-limits)
+
+Sub-agents in `.claude/agents/`: code-explorer, feature-scaffolder, build-verifier, reviewer, detekt-fixer, pr-manager, context-guardian.
 
 ## Git workflow
 
 - After any file creation or edit, run `git add` on the touched files (or `git add -A` from the project root) so the working tree stays staged.
 - Commits are allowed when I ask for them (e.g. "commit this") or under the Autonomous Agent Protocol below. Use Conventional Commit messages (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`).
-- **NEVER run `git push`.** All commits stay local for my review.
+- Pushing `feature/*` branches is allowed via the `git-pr` skill (`git push -u origin feature/<name>`).
+- Merging into `develop` is allowed — open a PR targeting `develop` and merge it (Git Flow), or merge the feature branch into `develop` directly. You may push to `develop`.
+- **`main` is protected and MINE.** NEVER push to `main`, merge into `main`, or approve/merge a PR targeting `main`. The `develop → main` promotion is my exclusive decision.
 - If `git add` reports an error (e.g. the file is gitignored), just continue; do not stop to report it.
 
 ## Autonomous Agent Protocol
@@ -68,9 +77,9 @@ Before writing any code, create a feature branch from an up-to-date `develop`:
 
 ### Hard limits (never do these)
 
-- NEVER run `git push`. All commits stay local for my review.
-- NEVER commit to `main` or `develop` directly.
-- NEVER merge into `main`. You MAY merge `develop` into your feature branch to stay current, but the feature → develop → main flow is MY decision, done by me.
+- Do real work on `feature/*` branches; push them via the `git-pr` skill.
+- Merging `feature/*` into `develop` is allowed (PR to `develop` then merge, or a direct Git Flow merge). You may push to `develop`.
+- **NEVER push to, commit to, or merge into `main`.** Never approve/merge a PR targeting `main`. The `develop → main` promotion is MINE alone.
 - NEVER force-push, hard-reset, or run `git clean`.
 - NEVER delete files in bulk or run destructive shell commands.
 - NEVER touch signing material (`*.jks`, `*.keystore`, `keystore.properties`) or any `.env` file.

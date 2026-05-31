@@ -17,7 +17,7 @@ import com.tekmoon.designsystem.components.DsTextSubTitle
 import com.tekmoon.designsystem.components.DsTextTitle
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-private const val SampleText =
+private const val SAMPLE_TEXT =
     "The quick brown fox jumps over the lazy dog"
 
 
@@ -37,27 +37,27 @@ fun DsText_Semantic_Preview() {
         }
     ) {
         DsTextDisplay(
-            text = "DsTextDisplay · 24.sp · Bold · primary · $SampleText"
+            text = "DsTextDisplay · 24.sp · Bold · primary · $SAMPLE_TEXT"
         )
         Spacer(modifier = Modifier.height(spacing))
         DsTextTitle(
-            text = "DsTextTitle · 20.sp · Bold · primary · $SampleText"
+            text = "DsTextTitle · 20.sp · Bold · primary · $SAMPLE_TEXT"
         )
         Spacer(modifier = Modifier.height(spacing))
         DsTextSubTitle(
-            text = "DsTextSubTitle · 18.sp · Regular · secondary · $SampleText"
+            text = "DsTextSubTitle · 18.sp · Regular · secondary · $SAMPLE_TEXT"
         )
         Spacer(modifier = Modifier.height(spacing))
         DsTextBody(
-            text = "DsTextBody · 16.sp · Regular · primary · $SampleText"
+            text = "DsTextBody · 16.sp · Regular · primary · $SAMPLE_TEXT"
         )
         Spacer(modifier = Modifier.height(spacing))
         DsTextLabel(
-            text = "DsTextLabel · 14.sp · Regular · secondary · $SampleText"
+            text = "DsTextLabel · 14.sp · Regular · secondary · $SAMPLE_TEXT"
         )
         Spacer(modifier = Modifier.height(spacing))
         DsTextCaption(
-            text = "DsTextCaption · 12.sp · Regular · tertiary · $SampleText"
+            text = "DsTextCaption · 12.sp · Regular · tertiary · $SAMPLE_TEXT"
         )
     }
 }
@@ -95,7 +95,7 @@ fun DsText_AllTypography_AllTextColors_Preview() {
         for ((typoLabel, textStyle) in typographyVariants) {
             for ((colorLabel, color) in textColorVariants) {
                 DsText(
-                    text = "$typoLabel · $colorLabel\n$SampleText",
+                    text = "$typoLabel · $colorLabel\n$SAMPLE_TEXT",
 //                    text = "$typoLabel · $colorLabel",
                     style = textStyle,
                     color = color

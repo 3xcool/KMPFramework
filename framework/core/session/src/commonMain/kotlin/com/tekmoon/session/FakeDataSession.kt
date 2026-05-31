@@ -26,7 +26,12 @@ class FakeDataSession<Model : Any>(
         _state.update { it.copy(resolved = model, initial = it.initial ?: model) }
     }
 
+    // Fake session: attach/refresh are no-ops; tests drive state directly via
+    // setLoading / setResolved / setError.
+    @Suppress("EmptyFunctionBlock")
     override fun attach(source: DataSessionSource<Model>) {}
+
+    @Suppress("EmptyFunctionBlock")
     override fun refresh(policy: DataSessionLoadPolicy?) {}
 
     override fun updateDraft(reducer: (Model) -> Model) {

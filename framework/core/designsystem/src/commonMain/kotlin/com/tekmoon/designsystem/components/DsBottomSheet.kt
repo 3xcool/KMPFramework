@@ -1,3 +1,15 @@
+@file:Suppress(
+    "LongMethod",
+    "CyclomaticComplexMethod",
+    "MaxLineLength",
+    "MaximumLineLength",
+)
+// DsBottomSheet's gesture-handling pipeline is intrinsically large: it
+// composes drag state, animation state, and three sheet positions. The
+// long `when` chains and the 140+ char lines belong to a single, readable
+// decision tree — extracting helpers would fragment the gesture logic and
+// hurt review-time understanding.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing

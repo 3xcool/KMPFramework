@@ -287,7 +287,7 @@ class PaginatorTest {
         robot.loadMore()
 
         robot.assertHasError()
-        robot.assertFalse_isLoadingMore()
+        robot.assertFalseIsLoadingMore()
     }
 
     // -----------------------------------------------------------------------
@@ -778,7 +778,7 @@ class PaginatorTestRobot(
         assertFalse(state.isRefreshing,     "Expected isRefreshing=false")
     }
 
-    fun assertFalse_isLoadingMore() =
+    fun assertFalseIsLoadingMore() =
         assertFalse(state.isLoadingMore, "Expected isLoadingMore=false")
 
     fun assertHasError()  = assertNotNull(state.error, "Expected an error to be set")

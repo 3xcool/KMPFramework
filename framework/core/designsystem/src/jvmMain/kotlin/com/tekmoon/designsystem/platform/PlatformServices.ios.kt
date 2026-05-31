@@ -1,4 +1,10 @@
+@file:Suppress("EmptyFunctionBlock")
+
 package com.tekmoon.designsystem.platform
+
+// Empty function bodies are intentional: these are JVM/Desktop placeholder
+// implementations. Haptics and system-chrome have no meaningful desktop
+// equivalent for now, so no-op is the explicit behavior.
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color

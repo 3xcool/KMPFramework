@@ -1,3 +1,8 @@
+@file:Suppress("LongMethod")
+// startSync orchestrates the realtime + REST sync state machine: refresh,
+// realtime subscribe, queue replay, error/retry. The body is sequential
+// glue between those steps and is clearer kept linear.
+
 package com.tekmoon.session
 
 import com.tekmoon.utilities.DispatcherProvider

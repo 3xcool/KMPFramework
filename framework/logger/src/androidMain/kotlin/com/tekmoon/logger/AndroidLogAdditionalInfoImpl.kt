@@ -27,7 +27,7 @@ open class AndroidLogAdditionalInfoImpl(
         Thread.currentThread().run { "$name ($id) | " }
 
     private val trace: String
-        get() = Throwable().stackTrace
+        get() = Throwable("stack-probe").stackTrace
             .first { it.className !in ignoreClassList }
             .let(::createStackElement)
 

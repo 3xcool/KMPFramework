@@ -24,7 +24,10 @@ actual suspend fun loadImageBitmap(source: ImageSource, context: Any?): ImageBit
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
             bitmap?.prepareToDraw()
             bitmap?.asImageBitmap()
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            // URL fetch + BitmapFactory.decode can throw IOException, network
+            // errors, OOM, or BitmapFactory's own decoding errors. Falling back
+            // to null lets callers show a placeholder.
             e.printStackTrace()
             null
         }
@@ -35,7 +38,8 @@ actual suspend fun loadImageBitmap(source: ImageSource, context: Any?): ImageBit
             val bitmap = BitmapFactory.decodeByteArray(source.value, 0, source.value.size)
             bitmap?.prepareToDraw()
             bitmap?.asImageBitmap()
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            // BitmapFactory.decodeByteArray can throw OOM or its own decode errors.
             e.printStackTrace()
             null
         }
@@ -51,7 +55,10 @@ actual suspend fun loadImageBitmap(source: ImageSource, context: Any?): ImageBit
             inputStream?.close()
             bitmap?.prepareToDraw()
             bitmap?.asImageBitmap()
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            // ContentResolver.openInputStream can throw SecurityException,
+            // FileNotFoundException, IOException; BitmapFactory.decodeStream
+            // adds its own decode errors. Falling back to null.
             e.printStackTrace()
             null
         }
