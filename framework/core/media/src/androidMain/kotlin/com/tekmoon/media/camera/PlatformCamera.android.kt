@@ -1,3 +1,9 @@
+@file:Suppress("LongMethod")
+// rememberCameraLauncher composes Activity-result launchers, camera/video
+// branches, FileProvider setup, and cleanup callbacks into a single state
+// holder. Splitting it would scatter the launcher bookkeeping that's clearer
+// kept together.
+
 package com.tekmoon.media.camera
 
 import android.app.Activity
@@ -132,7 +138,10 @@ actual fun rememberCameraLauncher(
                             captureLauncher.launch(uri)
                         }
                     }
-                } catch (e: Exception) {
+                } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                    // Camera capture launch can fail with FileProvider misconfig,
+                    // SecurityException from the OS, or activity-not-found. We
+                    // log the stack trace and report a null result to the caller.
                     e.printStackTrace()
                     onResult(pendingRequestKey, null)
                     pendingRequestKey = null
@@ -215,7 +224,9 @@ private suspend fun processMediaFile(
                 android.graphics.BitmapFactory.decodeFile(file.absolutePath, options)
                 width = options.outWidth
                 height = options.outHeight
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                // BitmapFactory.decodeFile can throw OOM or decode errors;
+                // missing dimensions are acceptable (caller treats as unknown).
                 e.printStackTrace()
             }
         } else if (mimeType.startsWith("video/")) {
@@ -226,7 +237,10 @@ private suspend fun processMediaFile(
                 height = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull()
                 duration = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
                 retriever.release()
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                // MediaMetadataRetriever can throw IllegalArgumentException,
+                // RuntimeException, or platform-specific failures; missing
+                // metadata is acceptable here.
                 e.printStackTrace()
             }
         }
@@ -241,7 +255,10 @@ private suspend fun processMediaFile(
             height = height,
             durationMs = duration,
         )
-    } catch (e: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        // processMediaFile orchestrates file I/O, content-resolver lookups,
+        // bitmap normalization, and metadata extraction — too many exception
+        // sources to enumerate. Failures fall back to null.
         e.printStackTrace()
         null
     }

@@ -9,5 +9,4 @@ import com.tekmoon.logger.domain.LoggerConfig
 open class AndroidLogConfig(
     override val enabled: Boolean = true,
     override val logWriters: List<LogWriter> = listOf(AndroidLogcatWriter()),
-): LoggerConfig {
-}
+): LoggerConfig

@@ -1,3 +1,10 @@
+@file:Suppress("LongMethod", "CyclomaticComplexMethod", "LongParameterList")
+// DsTextFieldImpl is the single internal implementation behind every
+// DsTextField overload. The parameter list mirrors the public surface
+// (value, callbacks, label, helperText, icons, variant, password mode,
+// styling). Splitting it would force every overload to either duplicate
+// glue code or thread state through wrapper objects.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.animation.animateColorAsState

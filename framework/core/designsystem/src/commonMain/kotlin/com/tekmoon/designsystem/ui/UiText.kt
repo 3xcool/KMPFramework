@@ -29,8 +29,11 @@ sealed class UiText {
         val resource: StringResource,
         val args: ImmutableList<Any?> = persistentListOf()
     ) : UiText() {
+        @Suppress("SpreadOperator")
         constructor(resource: StringResource, vararg args: Any?) : this(
             resource,
+            // persistentListOf takes vararg; the spread is the only way to
+            // forward a constructor vararg into it.
             persistentListOf(*args)
         )
     }
@@ -172,6 +175,9 @@ private fun UiText.resolveCompose(): String? {
             if (isPreview) {
                 fallback?.resolve(this)
             } else {
+                @Suppress("SpreadOperator")
+                // stringResource takes vararg Any?; the spread is the only way
+                // to forward our already-materialized argument list.
                 stringResource(
                     resource,
                     *args.filterNotNull().toTypedArray()
@@ -182,6 +188,8 @@ private fun UiText.resolveCompose(): String? {
             if (isPreview) {
                 fallback?.resolve(this)
             } else {
+                @Suppress("SpreadOperator")
+                // pluralStringResource takes vararg Any?; same as above.
                 pluralStringResource(
                     resource,
                     quantity,
@@ -203,9 +211,7 @@ fun UiText.resolveRaw(
         is UiText.DynamicString -> text
         is UiText.Annotated -> annotatedString.text
         else -> fallback?.resolve(this)
-            ?: throw IllegalStateException(
-                "Cannot resolve UiText without Compose or fallback: $this"
-            )
+            ?: error("Cannot resolve UiText without Compose or fallback: $this")
     }
 
 /* -------------------------------------------------------------------------- */

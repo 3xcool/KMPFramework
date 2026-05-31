@@ -1,7 +1,5 @@
 package com.tekmoon.logger
 
-import com.tekmoon.logger.domain.LogFlavor
-import com.tekmoon.logger.domain.LogWriter
 import com.tekmoon.logger.domain.LoggerConfig
 import com.tekmoon.logger.domain.Severity
 

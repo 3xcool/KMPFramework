@@ -104,7 +104,10 @@ class FakeRealtimeClient<Event> : RealtimeClient<Event> {
      * The state does NOT advance to [ConnectionState.Connected] automatically —
      * call [setConnectionState] or [simulateReconnect] to continue the simulation.
      */
+    @Suppress("UnusedParameter")
     fun simulateDrop(cause: Throwable? = null) {
+        // `cause` is accepted to keep parity with the real RealtimeClient signature
+        // (see ConnectionState.Reconnecting). The fake just transitions state.
         _connectionState.value = ConnectionState.Reconnecting(attempt = 1, delayMs = 0L)
     }
 

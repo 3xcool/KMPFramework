@@ -1,4 +1,10 @@
+@file:Suppress("EmptyFunctionBlock")
+
 package com.tekmoon.designsystem.platform
+
+// Empty function bodies are intentional: these are iOS placeholder
+// implementations awaiting real UIKit / haptics integration. The no-op
+// behavior is the explicit fallback for early integration phases.
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp

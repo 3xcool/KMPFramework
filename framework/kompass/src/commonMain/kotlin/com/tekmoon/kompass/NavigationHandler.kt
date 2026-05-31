@@ -1,7 +1,6 @@
 package com.tekmoon.kompass
 
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlin.collections.plus
@@ -101,12 +100,11 @@ class NavigationHandler() {
                     }
 
                 // Attach navigation result (only for single pop)
+                val isSinglePopWithResult = command.result != null &&
+                    command.count == 1 &&
+                    command.popUntil == null
                 val finalStack =
-                    if (command.result != null &&
-                        command.count == 1 &&
-                        command.popUntil == null &&
-                        newStack.isNotEmpty()
-                    ) {
+                    if (isSinglePopWithResult && newStack.isNotEmpty()) {
                         val popped = stack.last()
                         val key = popped.pendingResultKey
 

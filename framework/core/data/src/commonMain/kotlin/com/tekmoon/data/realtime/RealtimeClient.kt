@@ -210,7 +210,12 @@ internal class RealtimeClientImpl<Event>(
 
     // ── Connection loop ───────────────────────────────────────────────────────
 
+    @Suppress("LoopWithTooManyJumpStatements")
     private suspend fun runConnectionLoop() {
+        // The two break statements are the only readable way to express the
+        // two distinct stop conditions (handshake failed/user-disconnected
+        // and reconnect-policy gave up). Extracting them into a helper would
+        // hurt readability more than it would help.
         var attempt = 0
 
         while (!intentionalDisconnect) {
@@ -253,6 +258,10 @@ internal class RealtimeClientImpl<Event>(
                 session = this
                 _connectionState.value = ConnectionState.Connected
 
+                @Suppress("LoopWithTooManyJumpStatements")
+                // Two break statements: server-initiated close (Frame.Close)
+                // and intentional client disconnect. Both are normal exits and
+                // are clearer inline than a flag-and-helper refactor.
                 try {
                     for (frame in incoming) {
                         when (frame) {

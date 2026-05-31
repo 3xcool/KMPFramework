@@ -76,6 +76,9 @@ private object Sample3Graph : NavigationGraph {
  * States
  * ------------------------------------------- */
 
+// Sample illustrating scope-bound state; init and onCleared() are deliberate
+// empty hooks shown for documentation of where lifecycle code would live.
+@Suppress("EmptyInitBlock", "EmptyFunctionBlock")
 class ScreenState {
 
     var counter by mutableStateOf(0)
@@ -87,6 +90,7 @@ class ScreenState {
     }
 }
 
+@Suppress("EmptyFunctionBlock")
 class SharedState {
     var counter by mutableStateOf(0)
 

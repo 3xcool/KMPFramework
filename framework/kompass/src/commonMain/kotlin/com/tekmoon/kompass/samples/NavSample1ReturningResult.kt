@@ -7,12 +7,10 @@ import androidx.compose.runtime.Composable
 import com.tekmoon.kompass.PlatformBackHandler
 import com.tekmoon.kompass.BackStackEntry
 import com.tekmoon.kompass.Destination
-import com.tekmoon.kompass.NavigationCommand
 import com.tekmoon.kompass.NavigationGraph
 import com.tekmoon.kompass.KompassNavigationHost
 import com.tekmoon.kompass.NavController
 import com.tekmoon.kompass.NavigationResult
-import com.tekmoon.kompass.defaultScope
 import com.tekmoon.kompass.rememberNavController
 import com.tekmoon.kompass.toBackStackEntry
 import com.tekmoon.kompass.util.BackPressedChannel
