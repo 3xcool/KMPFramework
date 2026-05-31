@@ -20,7 +20,6 @@ import com.tekmoon.kompass.rememberNavController
 import com.tekmoon.kompass.toBackStackEntry
 import com.tekmoon.kompass.util.BackPressedChannel
 import kotlinx.collections.immutable.persistentListOf
-import com.tekmoon.kompass.generated.resources.Res
 
 
 private enum class KompassSampleDestinations : Destination {

@@ -20,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -28,13 +27,9 @@ import com.tekmoon.designsystem.DsTheme
 import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.DsSurface
 import com.tekmoon.designsystem.foundation.DsSurfaceRole
-import com.tekmoon.designsystem.image.DsIcon
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageDefaults
-import com.tekmoon.designsystem.image.DsImageLocal
 import com.tekmoon.designsystem.image.DsImageSource
-import com.tekmoon.designsystem.generated.resources.Res
-import com.tekmoon.designsystem.generated.resources.dog_man_image
 
 
 @Composable

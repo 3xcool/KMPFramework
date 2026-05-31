@@ -3,7 +3,6 @@ package com.tekmoon.kompass.samples
 import androidx.compose.runtime.Composable
 import com.tekmoon.kompass.BackStackEntry
 import com.tekmoon.kompass.Destination
-import com.tekmoon.kompass.NavigationCommand
 import com.tekmoon.kompass.NavigationGraph
 
 import androidx.compose.animation.*
@@ -23,7 +22,6 @@ import com.tekmoon.kompass.NavController
 import com.tekmoon.kompass.NavigationScopeId
 import com.tekmoon.kompass.PlatformBackHandler
 import com.tekmoon.kompass.SceneTransition
-import com.tekmoon.kompass.defaultScope
 import com.tekmoon.kompass.directionFrom
 import com.tekmoon.kompass.rememberNavController
 import com.tekmoon.kompass.rememberScoped

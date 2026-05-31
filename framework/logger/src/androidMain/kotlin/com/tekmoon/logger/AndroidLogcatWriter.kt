@@ -4,7 +4,6 @@ import android.util.Log
 import com.tekmoon.logger.domain.LogAdditionalInfo
 import com.tekmoon.logger.domain.LogWriter
 import com.tekmoon.logger.domain.Severity
-import kotlin.math.log
 
 /**
  * Created by Andre Filgueiras on 04/06/23.
