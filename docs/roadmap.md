@@ -55,9 +55,11 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ✅ `framework/sdk` is now a real bootstrap surface — `Framework.start(FrameworkInit)` is the single entry point (see Configuration / Bootstrap above).
 
 ### Background Work (`framework/feature/background-work`)
-- ⏳ `expect class BackgroundScheduler` with `schedule(task: BackgroundTask)`.
-- ⏳ Android actual via WorkManager.
-- 🧪 iOS actual via `BGTaskScheduler` — Phase 4 (device testing).
+- ✅ Single-launch and periodic schedules supported via `BackgroundSchedule.Immediate` / `Delayed(after)` / `Periodic(every, flex?)`. Inputs are a string map (survives process death on Android via WorkManager `Data`). Failures with `retriable=true` retry under linear / exponential backoff (`BackgroundRetry`). Pending-call replay (the "fail → store → background retry" pattern from messaging apps) is now possible by registering a handler that drains the pending-call store. Long-running tasks expose a `longRunning: Boolean` flag reserved for a follow-up PR that wires Android `setForeground` + foreground-service notification.
+- ✅ `BackgroundPolicy` enum: `Concurrent` (parallel), `Conflate` (replace in-flight of the same kind), `Queue` (FIFO per kind). On Android these map to WorkManager `ExistingWorkPolicy` (Concurrent=unique-by-id, Conflate=REPLACE, Queue=APPEND_OR_REPLACE).
+- ✅ `expect class BackgroundScheduler` with `schedule(task)` / `cancel(taskId)` / `cancelByKind(kind)` / `observe(taskId): Flow<BackgroundStatus>`. JVM actual is an in-memory coroutine dispatcher (testable; 8/8 jvmTest passing).
+- ✅ Android actual via WorkManager (OneTime + Periodic, constraints for network/charging, deterministic UUID per task id). Handler dispatch through `AndroidRegistryHolder`; missing handler returns `Result.failure()`.
+- 🧪 iOS actual via `BGTaskScheduler` — Phase 4 (device testing). Current iOS impl is a no-op stub so the module compiles cross-platform.
 
 ### Analytics (`framework/feature/analytics`)
 - ✅ `AnalyticsClient` interface (`track` / `screen` / `identify` / `reset` / `flush`) + `NoOpAnalyticsClient` (default) + `MultiAnalyticsClient` (fan-out with `runCatching` so one adapter's failure doesn't break the others) + `RecordingAnalyticsClient` (in commonMain for downstream tests). Wired into `Framework.start` via `FrameworkInit.analyticsClient`; exposed via `Framework.analytics`. Documented at [docs/analytics.md](analytics.md).
@@ -139,6 +141,14 @@ Use-case-agnostic renderer that maps a JSON schema to existing `core/designsyste
 ## Phase 4 — Platform-specific work (needs device testing — deferred)
 
 > **Note:** Everything below is paused until we have a device-testing setup (real device + entitlements + provisioning). Implementing iOS-native Compose interop without being able to run it on hardware too easily ships code that "looks right" but doesn't actually work. Same applies to FCM/APNs token flows and OS-level entitlements.
+
+### Background Work — iOS BGTaskScheduler
+The Phase 1 common API + Android WorkManager actual landed in PR #2. iOS stays a no-op stub there because `BGTaskScheduler` has too much OS-controlled behavior to verify without a device.
+- 🧪 Implement iOS actual against `platform.BackgroundTasks` (cinterop). Map `BackgroundPolicy.Conflate` semantics by replacing the request with the same identifier; `Queue` semantics by self-chaining the next request from the launch handler (iOS has no native FIFO unique-work concept).
+- 🧪 Map `BackgroundSchedule.Delayed` → `request.earliestBeginDate`. Pick `BGAppRefreshTaskRequest` (≤ ~30 s) vs `BGProcessingTaskRequest` (longer, optional power/network constraints) based on `requiresNetwork` / `requiresCharging` and a future `expectedDuration` field — short refresh is the default.
+- 🧪 Sample iOS app target that registers a permitted identifier in `Info.plist` (`BGTaskSchedulerPermittedIdentifiers`) and exercises the full submit → launch handler → `setTaskCompleted(success:)` round-trip. Used as the verification harness.
+- 🧪 Document the Info.plist additions, Background Modes entitlement (`background-fetch` and `background-processing`), and the "register identifiers BEFORE didFinishLaunching returns" rule. Library can't enforce these — consuming apps must.
+- 🧪 Manual verification checklist: short refresh fires within ~15 min of backgrounding on real hardware; processing task fires when device is idle + charging; `expirationHandler` properly cancels in-flight work; mismatched identifier in plist surfaces a clear error.
 
 ### Permissions — iOS verification
 - 🧪 Verify every flow on a real iOS device: Camera, Microphone, Photos, Notifications (incl. provisional), Contacts, Calendar, Location (when-in-use vs. always).
