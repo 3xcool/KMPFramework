@@ -85,6 +85,23 @@ Before writing any code, create a feature branch from an up-to-date `develop`:
 - NEVER touch signing material (`*.jks`, `*.keystore`, `keystore.properties`) or any `.env` file.
 - NEVER change `build-logic`, version numbers, or publishing config unless the task explicitly says so.
 
+### Privacy & secrets (never leak sensitive data)
+
+- **Never read, open, print, or echo secret files**: `.env` / `.env.*`,
+  `*.jks`, `*.keystore`, `keystore.properties`, `local.properties`,
+  `google-services.json`, `GoogleService-Info.plist`, `*.pem`, `*.key`, `*.p12`,
+  `id_rsa*`, `*credentials*`, `secrets.properties`. If a task needs a value from
+  one, ask me — don't read the file.
+- **Never put secrets into anything that gets shared or committed**: commit
+  messages, PR titles/descriptions, PR notes, branch names, code comments, logs,
+  or chat. Tokens, API keys, passwords, connection strings, and personal data
+  (PII) stay out.
+- **Redact before surfacing.** When generating PR notes or summaries from `gh`/
+  tool output, drop any token/key/credential-looking value rather than copy it.
+- **Don't hard-code secrets.** Use `local.properties` / env vars / `BuildKonfig`;
+  reference them, never inline them.
+- If you discover a secret committed or about to be committed, STOP and flag it.
+
 ### Verify before committing
 
 - Before each commit, make sure the relevant module still compiles (e.g. `./gradlew :composeApp:compileKotlinJvm`).

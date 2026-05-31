@@ -38,6 +38,19 @@ build/
 google-services.json
 
 ###############################
+# Secrets / credentials (never commit)
+###############################
+
+.env
+.env.*
+*.key
+*credentials*
+id_rsa
+id_rsa.*
+*.p12
+secrets.properties
+
+###############################
 # iOS / Xcode
 ###############################
 
