@@ -34,6 +34,9 @@ style:
     maxLineLength: 140                # bumped from 120 — Compose modifier chains
   UnusedPrivateMember:
     active: true
+    # @Preview composables are intentionally private and unused at runtime —
+    # they exist only for IDE preview / design-system catalog rendering.
+    ignoreAnnotated: ['Preview', 'Composable']
   UnusedParameter:
     # Composables accept modifier/onClick etc. for API consistency even when
     # the body doesn't reference them.
@@ -53,7 +56,9 @@ naming:
   active: true
   FunctionNaming:
     # Composables are PascalCase — exempt @Composable functions.
-    ignoreAnnotated: ['Composable']
+    # Test methods use JUnit's `foo_isBar` snake-case convention and
+    # backticked descriptive names — exempt @Test (kotlin.test + JUnit).
+    ignoreAnnotated: ['Composable', 'Preview', 'Test']
   TopLevelPropertyNaming:
     active: true
   MatchingDeclarationName:
@@ -71,7 +76,7 @@ formatting:
   MaximumLineLength:
     maxLineLength: 140
   FunctionName:
-    ignoreAnnotated: ['Composable']
+    ignoreAnnotated: ['Composable', 'Preview', 'Test']
   Filename:
     # Same KMP expect/actual concern as naming.MatchingDeclarationName.
     active: false
