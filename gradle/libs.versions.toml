@@ -52,6 +52,7 @@ moko = "0.19.1"
 buildkonfig = "0.17.1"
 kermit = "2.0.6"
 sqldelight = "2.0.2"
+detekt = "1.23.8"
 
 # Android media / image
 androidx-palette = "1.0.0"
@@ -168,6 +169,8 @@ kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", ve
 androidx-room-gradle-plugin = { module = "androidx.room:room-gradle-plugin", version.ref = "room" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 buildkonfig-gradlePlugin = { group = "com.codingfeline.buildkonfig", name = "buildkonfig-gradle-plugin", version.ref = "buildkonfig" }
+detekt-gradlePlugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 buildkonfig-compiler = { group = "com.codingfeline.buildkonfig", name = "buildkonfig-compiler", version.ref = "buildkonfig" }
 
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
@@ -238,6 +241,8 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+convention-detekt = { id = "com.tekmoon.convention.detekt", version = "unspecified" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 convention-sqldelight = { id = "com.tekmoon.convention.sqldelight", version = "unspecified" }
 

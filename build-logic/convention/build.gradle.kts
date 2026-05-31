@@ -32,6 +32,7 @@ dependencies {
     compileOnly(libs.androidx.room.gradle.plugin)
     implementation(libs.buildkonfig.gradlePlugin)
     implementation(libs.buildkonfig.compiler)
+    compileOnly(libs.detekt.gradlePlugin)
 }
 
 java {
@@ -101,6 +102,10 @@ gradlePlugin {
         register("mavenPublish") {
             id = "com.tekmoon.convention.maven.publish"
             implementationClass = "MavenPublishConventionPlugin"
+        }
+        register("detekt") {
+            id = "com.tekmoon.convention.detekt"
+            implementationClass = "DetektConventionPlugin"
         }
     }
 }

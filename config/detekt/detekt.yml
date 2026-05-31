@@ -1,0 +1,60 @@
+# Tekmoon KMP — detekt configuration.
+# buildUponDefaultConfig = true in the convention plugin, so this file only
+# overrides what differs from detekt's defaults. Tune thresholds as the codebase
+# matures.
+
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+complexity:
+  active: true
+  LongMethod:
+    threshold: 80
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 12          # MVI dialog UI states have many ctor params
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    active: false                     # design-system files legitimately have many
+  CyclomaticComplexMethod:
+    threshold: 20
+
+style:
+  active: true
+  MagicNumber:
+    active: false                     # noisy in Compose UI (dp/sp literals)
+  ReturnCount:
+    max: 4
+  MaxLineLength:
+    maxLineLength: 120
+  UnusedPrivateMember:
+    active: true
+  ForbiddenComment:
+    active: false                     # TODO/FIXME are allowed in WIP
+
+naming:
+  active: true
+  FunctionNaming:
+    # Composables are PascalCase — exempt @Composable functions.
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    active: true
+
+compose:
+  # detekt-formatting handles ktlint rules; Compose-specific rule packs can be
+  # added later (e.g. detekt-compose by appcash/twitter) if desired.
+  active: false
+
+formatting:
+  active: true
+  android: true
+  autoCorrect: false
+  MaximumLineLength:
+    maxLineLength: 120
+  FunctionName:
+    ignoreAnnotated: ['Composable']
