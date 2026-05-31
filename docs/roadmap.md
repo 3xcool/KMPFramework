@@ -142,6 +142,14 @@ Use-case-agnostic renderer that maps a JSON schema to existing `core/designsyste
 
 > **Note:** Everything below is paused until we have a device-testing setup (real device + entitlements + provisioning). Implementing iOS-native Compose interop without being able to run it on hardware too easily ships code that "looks right" but doesn't actually work. Same applies to FCM/APNs token flows and OS-level entitlements.
 
+### Background Work — iOS BGTaskScheduler
+The Phase 1 common API + Android WorkManager actual landed in PR #2. iOS stays a no-op stub there because `BGTaskScheduler` has too much OS-controlled behavior to verify without a device.
+- 🧪 Implement iOS actual against `platform.BackgroundTasks` (cinterop). Map `BackgroundPolicy.Conflate` semantics by replacing the request with the same identifier; `Queue` semantics by self-chaining the next request from the launch handler (iOS has no native FIFO unique-work concept).
+- 🧪 Map `BackgroundSchedule.Delayed` → `request.earliestBeginDate`. Pick `BGAppRefreshTaskRequest` (≤ ~30 s) vs `BGProcessingTaskRequest` (longer, optional power/network constraints) based on `requiresNetwork` / `requiresCharging` and a future `expectedDuration` field — short refresh is the default.
+- 🧪 Sample iOS app target that registers a permitted identifier in `Info.plist` (`BGTaskSchedulerPermittedIdentifiers`) and exercises the full submit → launch handler → `setTaskCompleted(success:)` round-trip. Used as the verification harness.
+- 🧪 Document the Info.plist additions, Background Modes entitlement (`background-fetch` and `background-processing`), and the "register identifiers BEFORE didFinishLaunching returns" rule. Library can't enforce these — consuming apps must.
+- 🧪 Manual verification checklist: short refresh fires within ~15 min of backgrounding on real hardware; processing task fires when device is idle + charging; `expirationHandler` properly cancels in-flight work; mismatched identifier in plist surfaces a clear error.
+
 ### Permissions — iOS verification
 - 🧪 Verify every flow on a real iOS device: Camera, Microphone, Photos, Notifications (incl. provisional), Contacts, Calendar, Location (when-in-use vs. always).
 - 🧪 The current Location implementation re-reads `authorizationStatus` after `requestWhenInUseAuthorization`/`requestAlwaysAuthorization` returns. The actual prompt resolution is delivered via `CLLocationManagerDelegate` — may need to switch to a delegate-based wait pattern depending on what device testing shows.
