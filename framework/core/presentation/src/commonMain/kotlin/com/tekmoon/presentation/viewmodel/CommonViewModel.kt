@@ -101,7 +101,10 @@ abstract class CommonViewModel<Action : Any, Event : Any, State : Any>(
     ) {
         try {
             block()
-        } catch (throwable: Throwable) {
+        } catch (@Suppress("TooGenericExceptionCaught") throwable: Throwable) {
+            // Generic catch is the point of withCatching: it's a final safety net
+            // around arbitrary user-supplied blocks. The throwable is logged with
+            // its full stack trace so nothing is silently swallowed.
             logger?.e("Exception in ${this::class.simpleName} -> ${throwable.stackTraceToString()}")
         }
     }

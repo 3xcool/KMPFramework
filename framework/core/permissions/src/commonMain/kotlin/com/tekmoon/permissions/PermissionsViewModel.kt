@@ -105,7 +105,10 @@ class PermissionsViewModel(
                 updatePermissionState(permission, resultState)
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                // Generic catch is intentional: requestPermission delegates to a
+                // platform controller whose failure modes aren't enumerated here.
+                // CancellationException is re-thrown above; the rest is logged.
                 logSafe { "requestPermission failed -> ${e.stackTraceToString()}" }
             } finally {
                 updateState { it.copy(isRequestingPermissions = false) }
@@ -168,7 +171,10 @@ class PermissionsViewModel(
                 }
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                // Generic catch is intentional: requestAllPermissions iterates
+                // multiple platform-controller calls whose failure modes vary by
+                // OS. CancellationException is re-thrown above; the rest is logged.
                 logSafe { "requestAllPermissions failed -> ${e.stackTraceToString()}" }
             } finally {
                 updateState { it.copy(isRequestingPermissions = false) }
