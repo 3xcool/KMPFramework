@@ -45,10 +45,8 @@ naming:
   TopLevelPropertyNaming:
     active: true
 
-compose:
-  # detekt-formatting handles ktlint rules; Compose-specific rule packs can be
-  # added later (e.g. detekt-compose by appcash/twitter) if desired.
-  active: false
+# Note: there is no built-in `compose` ruleset in detekt; Compose-specific rule
+# packs (e.g. detekt-compose) can be added as a detektPlugin later if desired.
 
 formatting:
   active: true
