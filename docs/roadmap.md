@@ -55,9 +55,11 @@ Cross-cutting building blocks that the rest of the framework depends on. All com
 - ✅ `framework/sdk` is now a real bootstrap surface — `Framework.start(FrameworkInit)` is the single entry point (see Configuration / Bootstrap above).
 
 ### Background Work (`framework/feature/background-work`)
-- ⏳ `expect class BackgroundScheduler` with `schedule(task: BackgroundTask)`.
-- ⏳ Android actual via WorkManager.
-- 🧪 iOS actual via `BGTaskScheduler` — Phase 4 (device testing).
+- ✅ Single-launch and periodic schedules supported via `BackgroundSchedule.Immediate` / `Delayed(after)` / `Periodic(every, flex?)`. Inputs are a string map (survives process death on Android via WorkManager `Data`). Failures with `retriable=true` retry under linear / exponential backoff (`BackgroundRetry`). Pending-call replay (the "fail → store → background retry" pattern from messaging apps) is now possible by registering a handler that drains the pending-call store. Long-running tasks expose a `longRunning: Boolean` flag reserved for a follow-up PR that wires Android `setForeground` + foreground-service notification.
+- ✅ `BackgroundPolicy` enum: `Concurrent` (parallel), `Conflate` (replace in-flight of the same kind), `Queue` (FIFO per kind). On Android these map to WorkManager `ExistingWorkPolicy` (Concurrent=unique-by-id, Conflate=REPLACE, Queue=APPEND_OR_REPLACE).
+- ✅ `expect class BackgroundScheduler` with `schedule(task)` / `cancel(taskId)` / `cancelByKind(kind)` / `observe(taskId): Flow<BackgroundStatus>`. JVM actual is an in-memory coroutine dispatcher (testable; 8/8 jvmTest passing).
+- ✅ Android actual via WorkManager (OneTime + Periodic, constraints for network/charging, deterministic UUID per task id). Handler dispatch through `AndroidRegistryHolder`; missing handler returns `Result.failure()`.
+- 🧪 iOS actual via `BGTaskScheduler` — Phase 4 (device testing). Current iOS impl is a no-op stub so the module compiles cross-platform.
 
 ### Analytics (`framework/feature/analytics`)
 - ✅ `AnalyticsClient` interface (`track` / `screen` / `identify` / `reset` / `flush`) + `NoOpAnalyticsClient` (default) + `MultiAnalyticsClient` (fan-out with `runCatching` so one adapter's failure doesn't break the others) + `RecordingAnalyticsClient` (in commonMain for downstream tests). Wired into `Framework.start` via `FrameworkInit.analyticsClient`; exposed via `Framework.analytics`. Documented at [docs/analytics.md](analytics.md).
