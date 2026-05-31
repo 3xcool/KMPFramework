@@ -40,6 +40,14 @@ style:
     ignoreAnnotated: ['Composable']
   ForbiddenComment:
     active: false                     # TODO/FIXME are allowed in WIP
+  NewLineAtEndOfFile:
+    # Cosmetic — paired with formatting.FinalNewline (same concern, different ruleset).
+    active: false
+
+empty-blocks:
+  active: true
+  EmptyDefaultConstructor:
+    active: false                     # cosmetic
 
 naming:
   active: true
