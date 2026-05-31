@@ -56,7 +56,7 @@ public actual class BackgroundScheduler(
 
         val inputData = Data.Builder()
             .putString(BackgroundTaskCoroutineWorker.KEY_TASK_ID, task.id)
-            .putString(BackgroundTaskCoroutineWorker.KEY_TASK_KIND, task.kind)
+            .putString(BackgroundTaskCoroutineWorker.KEY_TASK_KIND, task.kind.id)
             .putAll(task.input.mapKeys { "${BackgroundTaskCoroutineWorker.INPUT_PREFIX}${it.key}" })
             .build()
 
@@ -92,9 +92,9 @@ public actual class BackgroundScheduler(
             BackgroundPolicy.Concurrent ->
                 workManager.enqueueUniqueWork(task.id, ExistingWorkPolicy.KEEP, request)
             BackgroundPolicy.Conflate ->
-                workManager.enqueueUniqueWork(task.kind, ExistingWorkPolicy.REPLACE, request)
+                workManager.enqueueUniqueWork(task.kind.id, ExistingWorkPolicy.REPLACE, request)
             BackgroundPolicy.Queue ->
-                workManager.enqueueUniqueWork(task.kind, ExistingWorkPolicy.APPEND_OR_REPLACE, request)
+                workManager.enqueueUniqueWork(task.kind.id, ExistingWorkPolicy.APPEND_OR_REPLACE, request)
         }
     }
 
@@ -129,7 +129,7 @@ public actual class BackgroundScheduler(
         }
         val uniqueName = when (task.policy) {
             BackgroundPolicy.Concurrent -> task.id
-            BackgroundPolicy.Conflate, BackgroundPolicy.Queue -> task.kind
+            BackgroundPolicy.Conflate, BackgroundPolicy.Queue -> task.kind.id
         }
         workManager.enqueueUniquePeriodicWork(uniqueName, periodicPolicy, request)
     }
@@ -138,8 +138,8 @@ public actual class BackgroundScheduler(
         workManager.cancelWorkById(uuidFromTaskId(taskId))
     }
 
-    public actual fun cancelByKind(kind: String) {
-        workManager.cancelUniqueWork(kind)
+    public actual fun cancelByKind(kind: BackgroundTaskKind) {
+        workManager.cancelUniqueWork(kind.id)
     }
 
     public actual fun observe(taskId: String): Flow<BackgroundStatus> =

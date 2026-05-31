@@ -48,7 +48,8 @@ public actual class BackgroundScheduler(
     private suspend fun scheduleInternal(task: BackgroundTask) {
         val status = statusFlow(task.id)
         status.value = BackgroundStatus.Enqueued
-        mutex.withLock { taskKind[task.id] = task.kind }
+        val kindId = task.kind.id
+        mutex.withLock { taskKind[task.id] = kindId }
 
         when (task.policy) {
             BackgroundPolicy.Concurrent -> {
@@ -58,7 +59,7 @@ public actual class BackgroundScheduler(
             BackgroundPolicy.Conflate -> {
                 mutex.withLock {
                     // Cancel every in-flight task of the same kind.
-                    val toCancel = taskKind.entries.filter { it.value == task.kind && it.key != task.id }
+                    val toCancel = taskKind.entries.filter { it.value == kindId && it.key != task.id }
                     toCancel.forEach { (id, _) -> running[id]?.cancel() }
                 }
                 val job = scope.launch { runWithDelayAndRetry(task, status) }
@@ -73,7 +74,7 @@ public actual class BackgroundScheduler(
         status: MutableStateFlow<BackgroundStatus>,
     ) {
         val channel = mutex.withLock {
-            queues.getOrPut(task.kind) {
+            queues.getOrPut(task.kind.id) {
                 Channel<BackgroundTask>(Channel.UNLIMITED).also { ch ->
                     scope.launch {
                         for (queued in ch) {
@@ -103,9 +104,10 @@ public actual class BackgroundScheduler(
         }
     }
 
-    public actual fun cancelByKind(kind: String) {
+    public actual fun cancelByKind(kind: BackgroundTaskKind) {
         scope.launch {
-            val ids = mutex.withLock { taskKind.entries.filter { it.value == kind }.map { it.key } }
+            val kindId = kind.id
+            val ids = mutex.withLock { taskKind.entries.filter { it.value == kindId }.map { it.key } }
             ids.forEach { cancel(it) }
         }
     }
@@ -133,7 +135,7 @@ public actual class BackgroundScheduler(
             val handler = registry.handler(task.kind)
             if (handler == null) {
                 status.value = BackgroundStatus.Failed(
-                    IllegalStateException("No handler registered for kind=${task.kind}"),
+                    IllegalStateException("No handler registered for kind=${task.kind.id}"),
                 )
                 cleanup(task.id)
                 return

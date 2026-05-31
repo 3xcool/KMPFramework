@@ -38,7 +38,7 @@ class BackgroundSchedulerPolicyTest {
         val registry = BackgroundTaskRegistry()
         val concurrentObserved = mutableListOf<Int>()
         var inFlight = 0
-        registry.register("ping") { _ ->
+        registry.register(StringTaskKind("ping")) { _ ->
             inFlight++
             concurrentObserved.add(inFlight)
             delay(100)
@@ -59,7 +59,7 @@ class BackgroundSchedulerPolicyTest {
     fun conflate_cancels_in_flight_same_kind() = testScope.runTest {
         val registry = BackgroundTaskRegistry()
         val completed = mutableListOf<String>()
-        registry.register("upload") { input ->
+        registry.register(StringTaskKind("upload")) { input ->
             // `delay()` throws CancellationException on cancel, which
             // propagates naturally — no need to catch and rethrow.
             delay(500)
@@ -83,7 +83,7 @@ class BackgroundSchedulerPolicyTest {
         val registry = BackgroundTaskRegistry()
         val started = mutableListOf<String>()
         val finished = mutableListOf<String>()
-        registry.register("sync") { input ->
+        registry.register(StringTaskKind("sync")) { input ->
             val id = input["id"] ?: ""
             started.add(id)
             delay(100)
@@ -105,7 +105,7 @@ class BackgroundSchedulerPolicyTest {
     @Test
     fun status_transitions_enqueued_running_succeeded() = testScope.runTest {
         val registry = BackgroundTaskRegistry()
-        registry.register("once") { BackgroundResult.Success }
+        registry.register(StringTaskKind("once")) { BackgroundResult.Success }
         val scheduler = BackgroundScheduler(schedulerScope, registry)
 
         scheduler.schedule(task("t1", "once"))
@@ -118,7 +118,7 @@ class BackgroundSchedulerPolicyTest {
     fun failure_with_retry_eventually_succeeds() = testScope.runTest {
         val registry = BackgroundTaskRegistry()
         var attempts = 0
-        registry.register("retry-me") {
+        registry.register(StringTaskKind("retry-me")) {
             attempts++
             if (attempts < 3) BackgroundResult.Failure(retriable = true) else BackgroundResult.Success
         }
@@ -151,7 +151,7 @@ class BackgroundSchedulerPolicyTest {
     @Test
     fun cancel_marks_status_cancelled() = testScope.runTest {
         val registry = BackgroundTaskRegistry()
-        registry.register("slow") {
+        registry.register(StringTaskKind("slow")) {
             delay(5_000)
             BackgroundResult.Success
         }
@@ -171,7 +171,7 @@ class BackgroundSchedulerPolicyTest {
         input: kotlinx.collections.immutable.ImmutableMap<String, String> = persistentMapOf(),
     ) = BackgroundTask(
         id = id,
-        kind = kind,
+        kind = StringTaskKind(kind),
         policy = policy,
         input = input,
     )

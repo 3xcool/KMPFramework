@@ -20,6 +20,6 @@ import kotlinx.coroutines.flow.Flow
 public expect class BackgroundScheduler {
     public fun schedule(task: BackgroundTask)
     public fun cancel(taskId: String)
-    public fun cancelByKind(kind: String)
+    public fun cancelByKind(kind: BackgroundTaskKind)
     public fun observe(taskId: String): Flow<BackgroundStatus>
 }

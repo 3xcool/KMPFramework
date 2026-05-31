@@ -8,8 +8,10 @@ import kotlinx.collections.immutable.persistentMapOf
  *
  * - [id] uniquely identifies one *scheduling call*. Two schedule calls with
  *   the same id are treated as the same task by the scheduler.
- * - [kind] is the logical *task type*. It drives both:
- *   1. handler dispatch — the [BackgroundTaskRegistry] maps `kind` → handler.
+ * - [kind] is the logical *task type*. See [BackgroundTaskKind] for the
+ *   recommended way to define your app's catalog of kinds (enum, sealed
+ *   class, or [StringTaskKind] for ad-hoc cases). The kind drives both:
+ *   1. handler dispatch — [BackgroundTaskRegistry] maps `kind.id` → handler.
  *   2. policy grouping — [BackgroundPolicy.Conflate] and [BackgroundPolicy.Queue]
  *      operate on all tasks sharing the same kind.
  * - [input] is a serialisable string map handed to the handler. Restricted to
@@ -20,7 +22,7 @@ import kotlinx.collections.immutable.persistentMapOf
  */
 public data class BackgroundTask(
     val id: String,
-    val kind: String,
+    val kind: BackgroundTaskKind,
     val policy: BackgroundPolicy = BackgroundPolicy.Concurrent,
     val schedule: BackgroundSchedule = BackgroundSchedule.Immediate,
     val retry: BackgroundRetry = BackgroundRetry(),

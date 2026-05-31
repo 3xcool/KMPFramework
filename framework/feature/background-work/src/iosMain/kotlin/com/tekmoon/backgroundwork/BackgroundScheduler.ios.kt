@@ -29,7 +29,7 @@ public actual class BackgroundScheduler(
         statuses[taskId]?.value = BackgroundStatus.Cancelled
     }
 
-    public actual fun cancelByKind(kind: String) {
+    public actual fun cancelByKind(kind: BackgroundTaskKind) {
         // Phase 4 will track per-kind identifiers; the stub has nothing to cancel.
     }
 
