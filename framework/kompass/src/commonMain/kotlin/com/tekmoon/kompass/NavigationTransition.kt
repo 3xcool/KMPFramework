@@ -171,6 +171,7 @@ data class SceneTransitionDefault(
          * Useful for lightweight navigation flows or
          * high-frequency transitions.
          */
+        @Suppress("FunctionNaming")
         fun Fast() = SceneTransitionDefault(
             durationMs = 200,
             parallaxFactor = 0.3f
@@ -181,6 +182,7 @@ data class SceneTransitionDefault(
          *
          * Useful for emphasizing navigation hierarchy changes.
          */
+        @Suppress("FunctionNaming")
         fun Slow() = SceneTransitionDefault(
             durationMs = 500,
             parallaxFactor = 0.5f
@@ -191,6 +193,7 @@ data class SceneTransitionDefault(
          *
          * Useful when parallax is undesirable or visually distracting.
          */
+        @Suppress("FunctionNaming")
         fun Flat() = SceneTransitionDefault(
             durationMs = 300,
             parallaxFactor = 0f

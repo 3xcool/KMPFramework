@@ -10,5 +10,4 @@ import com.tekmoon.logger.domain.LoggerConfig
 open class IosLogConfig(
     override val enabled: Boolean = true,
     override val logWriters: List<LogWriter> = listOf(CommonLogWriter(tag = "iOS-ShowMe")),
-): LoggerConfig {
-}
+): LoggerConfig

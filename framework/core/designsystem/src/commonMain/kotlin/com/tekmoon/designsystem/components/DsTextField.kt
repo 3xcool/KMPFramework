@@ -1,3 +1,10 @@
+@file:Suppress("LongMethod", "CyclomaticComplexMethod", "LongParameterList")
+// DsTextFieldImpl is the single internal implementation behind every
+// DsTextField overload. The parameter list mirrors the public surface
+// (value, callbacks, label, helperText, icons, variant, password mode,
+// styling). Splitting it would force every overload to either duplicate
+// glue code or thread state through wrapper objects.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.animation.animateColorAsState
@@ -13,6 +20,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
@@ -21,11 +30,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -33,6 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
 import com.tekmoon.designsystem.foundation.DsShapesDefault
+import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
 import androidx.compose.ui.draw.drawBehind
@@ -76,6 +91,10 @@ fun DsTextField(
     enabled: Boolean = true,
     readOnly: Boolean = false,
     singleLine: Boolean = true,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 
     leadingIcon: DsTextFieldIcon? = null,
     trailingIcon: DsTextFieldIcon? = null,
@@ -83,11 +102,20 @@ fun DsTextField(
     visualVariant: DsTextFieldVariant = DsTextFieldVariant.Outlined,
     isPassword: Boolean = false,
     isPasswordVisible: Boolean = false,
+    passwordShowContentDescription: String? = null,
+    passwordHideContentDescription: String? = null,
 
     textStyle: TextStyle = DsTheme.typography.base,
     colors: DsTextFieldColors = DsTextFieldDefaults.colors(),
     shape: Shape = DsShapesDefault.md
 ) {
+    require(
+        !isPassword ||
+            (passwordShowContentDescription != null && passwordHideContentDescription != null)
+    ) {
+        "DsTextField with isPassword=true requires both passwordShowContentDescription " +
+            "and passwordHideContentDescription"
+    }
     DsTextFieldImpl(
         value = value,
         onValueChange = onValueChange,
@@ -99,11 +127,16 @@ fun DsTextField(
         enabled = enabled,
         readOnly = readOnly,
         singleLine = singleLine,
+        maxLines = maxLines,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         visualVariant = visualVariant,
         isPassword = isPassword,
         isPasswordVisible = isPasswordVisible,
+        passwordShowContentDescription = passwordShowContentDescription,
+        passwordHideContentDescription = passwordHideContentDescription,
         textStyle = textStyle,
         colors = colors,
         shape = shape
@@ -131,6 +164,10 @@ internal fun DsTextFieldImpl(
     enabled: Boolean,
     readOnly: Boolean,
     singleLine: Boolean,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 
     leadingIcon: DsTextFieldIcon? = null,
     trailingIcon: DsTextFieldIcon? = null,
@@ -138,6 +175,8 @@ internal fun DsTextFieldImpl(
     visualVariant: DsTextFieldVariant,
     isPassword: Boolean,
     isPasswordVisible: Boolean,
+    passwordShowContentDescription: String? = null,
+    passwordHideContentDescription: String? = null,
 
     textStyle: TextStyle,
     colors: DsTextFieldColors,
@@ -214,6 +253,9 @@ internal fun DsTextFieldImpl(
                 enabled = enabled,
                 readOnly = readOnly,
                 singleLine = singleLine,
+                maxLines = maxLines,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
                 interactionSource = interactionSource,
                 textStyle = textStyle.copy(
                     color = if (enabled) colors.text else colors.disabledText
@@ -241,6 +283,8 @@ internal fun DsTextFieldImpl(
                 isPassword -> {
                     DsPasswordToggle(
                         visible = passwordVisible,
+                        showContentDescription = passwordShowContentDescription!!,
+                        hideContentDescription = passwordHideContentDescription!!,
                         onToggle = { passwordVisible = !passwordVisible }
                     )
                 }
@@ -267,14 +311,24 @@ internal fun DsTextFieldImpl(
 @Composable
 private fun DsPasswordToggle(
     visible: Boolean,
-    onToggle: () -> Unit
+    showContentDescription: String,
+    hideContentDescription: String,
+    onToggle: () -> Unit,
 ) {
-    BasicText(
-        text = if (visible) "🙈" else "👁",
+    val description = if (visible) hideContentDescription else showContentDescription
+    Box(
         modifier = Modifier
             .padding(start = 8.dp)
+            .dsMinimumTouchTarget(48.dp)
             .clickable(onClick = onToggle)
-    )
+            .semantics {
+                role = Role.Button
+                contentDescription = description
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        BasicText(text = if (visible) "🙈" else "👁")
+    }
 }
 
 

@@ -13,11 +13,9 @@ interface LoggerConfig {
 open class DefaultLoggerConfig(
     override val enabled: Boolean = true,
     override val logWriters: List<LogWriter> = listOf(CommonLogWriter()),
-): LoggerConfig {
-}
+): LoggerConfig
 
 open class TestLoggerConfig(
     override val enabled: Boolean = true,
     override val logWriters: List<LogWriter> = listOf(CommonLogWriter(tag = "ShowMe")),
-): LoggerConfig {
-}
+): LoggerConfig

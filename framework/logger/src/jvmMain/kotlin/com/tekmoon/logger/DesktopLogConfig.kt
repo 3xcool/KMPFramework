@@ -10,5 +10,4 @@ import com.tekmoon.logger.domain.LoggerConfig
 open class DesktopLogConfig(
     override val enabled: Boolean = true,
     override val logWriters: List<LogWriter> = listOf(CommonLogWriter(tag = "Desktop-ShowMe")),
-): LoggerConfig {
-}
+): LoggerConfig

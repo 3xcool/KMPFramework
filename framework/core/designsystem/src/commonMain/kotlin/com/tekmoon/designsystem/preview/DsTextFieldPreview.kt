@@ -42,7 +42,9 @@ fun DsTextFieldPreview_Empty() {
                 onValueChange = { text = it },
                 label = "Password",
                 placeholder = "••••••",
-                isPassword = true
+                isPassword = true,
+                passwordShowContentDescription = "Show password",
+                passwordHideContentDescription = "Hide password",
             )
 
             DsTextField(
@@ -51,7 +53,9 @@ fun DsTextFieldPreview_Empty() {
                 label = "Password",
                 placeholder = "••••••",
                 isPassword = true,
-                isPasswordVisible = true
+                isPasswordVisible = true,
+                passwordShowContentDescription = "Show password",
+                passwordHideContentDescription = "Hide password",
             )
 
             DsTextField(
@@ -115,7 +119,9 @@ fun DsTextFieldPreview_WithText() {
                 onValueChange = { text = it },
                 label = "Password",
                 placeholder = "••••••",
-                isPassword = true
+                isPassword = true,
+                passwordShowContentDescription = "Show password",
+                passwordHideContentDescription = "Hide password",
             )
 
             DsTextField(
@@ -124,7 +130,9 @@ fun DsTextFieldPreview_WithText() {
                 label = "Password",
                 placeholder = "••••••",
                 isPassword = true,
-                isPasswordVisible = true
+                isPasswordVisible = true,
+                passwordShowContentDescription = "Show password",
+                passwordHideContentDescription = "Hide password",
             )
 
             DsTextField(

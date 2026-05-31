@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.convention.cmp.library)
+    alias(libs.plugins.convention.kmp.android.test)
 }
 
 kotlin {
@@ -9,7 +10,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
-                // Add KMP dependencies here
+                implementation(libs.kotlinx.coroutines.core)
 
                 implementation(libs.material3.adaptive)
 
@@ -30,6 +31,14 @@ kotlin {
 
         iosMain {
             dependencies {
+            }
+        }
+
+        // JVM host unit tests — no emulator required
+        sourceSets.matching { it.name == "androidHostTest" }.configureEach {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
     }

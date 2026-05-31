@@ -1,0 +1,130 @@
+# Tekmoon KMP — detekt configuration.
+# buildUponDefaultConfig = true in the convention plugin, so this file only
+# overrides what differs from detekt's defaults. Tune thresholds as the codebase
+# matures.
+
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+complexity:
+  active: true
+  LongMethod:
+    threshold: 80
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 12          # MVI dialog UI states have many ctor params
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    active: false                     # design-system files legitimately have many
+  CyclomaticComplexMethod:
+    threshold: 20
+
+style:
+  active: true
+  MagicNumber:
+    active: false                     # noisy in Compose UI (dp/sp literals)
+  ReturnCount:
+    max: 4
+  MaxLineLength:
+    maxLineLength: 140                # bumped from 120 — Compose modifier chains
+  UnusedPrivateMember:
+    active: true
+    # @Preview composables are intentionally private and unused at runtime —
+    # they exist only for IDE preview / design-system catalog rendering.
+    ignoreAnnotated: ['Preview', 'Composable']
+  UnusedParameter:
+    # Composables accept modifier/onClick etc. for API consistency even when
+    # the body doesn't reference them.
+    ignoreAnnotated: ['Composable']
+  ForbiddenComment:
+    active: false                     # TODO/FIXME are allowed in WIP
+  NewLineAtEndOfFile:
+    # Cosmetic — paired with formatting.FinalNewline (same concern, different ruleset).
+    active: false
+
+empty-blocks:
+  active: true
+  EmptyDefaultConstructor:
+    active: false                     # cosmetic
+
+naming:
+  active: true
+  FunctionNaming:
+    # Composables are PascalCase — exempt @Composable functions.
+    # Test methods use JUnit's `foo_isBar` snake-case convention and
+    # backticked descriptive names — exempt @Test (kotlin.test + JUnit).
+    ignoreAnnotated: ['Composable', 'Preview', 'Test']
+  TopLevelPropertyNaming:
+    active: true
+  MatchingDeclarationName:
+    # KMP expect/actual layouts (e.g. PlatformCursor.android.kt declaring
+    # actualCursor) intentionally don't match the filename.
+    active: false
+
+# Note: there is no built-in `compose` ruleset in detekt; Compose-specific rule
+# packs (e.g. detekt-compose) can be added as a detektPlugin later if desired.
+
+formatting:
+  active: true
+  android: true
+  autoCorrect: false
+  MaximumLineLength:
+    maxLineLength: 140
+  FunctionName:
+    ignoreAnnotated: ['Composable', 'Preview', 'Test']
+  Filename:
+    # Same KMP expect/actual concern as naming.MatchingDeclarationName.
+    active: false
+
+  # --- Group A: purely cosmetic rules disabled ---
+  # These rules report style/whitespace concerns that don't catch bugs and
+  # frequently collide with intentional formatting (column alignment, Compose
+  # call style, Kotlin DSL builders). They are off by deliberate choice; the
+  # bug-catching formatting rules (NoUnusedImports, NoWildcardImports) stay on.
+  NoMultipleSpaces:
+    active: false
+  NewLineAtEndOfFile:
+    active: false
+  FinalNewline:
+    active: false
+  NoConsecutiveBlankLines:
+    active: false
+  MultiLineIfElse:
+    active: false
+  ArgumentListWrapping:
+    active: false
+  ImportOrdering:
+    active: false
+  Wrapping:
+    active: false
+  NoEmptyFirstLineInMethodBlock:
+    active: false
+  Indentation:
+    active: false
+  SpacingAroundColon:
+    active: false
+  FunctionStartOfBodySpacing:
+    active: false
+  CommentSpacing:
+    active: false
+  SpacingBetweenDeclarationsWithComments:
+    active: false
+  SpacingAroundCurly:
+    active: false
+  SpacingAroundKeyword:
+    active: false
+  SpacingAroundOperators:
+    active: false
+  NoBlankLineBeforeRbrace:
+    active: false
+  EmptyDefaultConstructor:
+    active: false
+  SpacingAroundParens:
+    active: false
+  StringTemplate:
+    active: false

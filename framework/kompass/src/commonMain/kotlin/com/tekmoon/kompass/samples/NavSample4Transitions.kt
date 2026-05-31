@@ -3,10 +3,14 @@ package com.tekmoon.kompass.samples
 import androidx.compose.runtime.Composable
 import com.tekmoon.kompass.BackStackEntry
 import com.tekmoon.kompass.Destination
-import com.tekmoon.kompass.NavigationCommand
 import com.tekmoon.kompass.NavigationGraph
 
-import androidx.compose.animation.*
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +27,6 @@ import com.tekmoon.kompass.NavController
 import com.tekmoon.kompass.NavigationScopeId
 import com.tekmoon.kompass.PlatformBackHandler
 import com.tekmoon.kompass.SceneTransition
-import com.tekmoon.kompass.defaultScope
 import com.tekmoon.kompass.directionFrom
 import com.tekmoon.kompass.rememberNavController
 import com.tekmoon.kompass.rememberScoped
@@ -115,6 +118,9 @@ private object Sample4Graph : NavigationGraph {
  * States
  * ------------------------------------------- */
 
+// Sample illustrating per-scope state; init and onCleared() are deliberate
+// empty hooks shown for documentation of where lifecycle code would live.
+@Suppress("EmptyInitBlock", "EmptyFunctionBlock")
 class Screen4State {
     var counter by mutableStateOf(0)
 
@@ -125,6 +131,7 @@ class Screen4State {
     }
 }
 
+@Suppress("EmptyInitBlock", "EmptyFunctionBlock")
 private class Sample4SharedState {
     var counter by mutableStateOf(0)
 

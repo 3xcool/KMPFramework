@@ -3,9 +3,11 @@ package com.tekmoon.data
 /**
  * Runtime configuration for the Tekmoon framework.
  *
- * Consumer apps must call [init] before using framework networking features.
+ * In new code, prefer calling `Framework.start(FrameworkInit(...))` from `framework:sdk` instead
+ * of [init] directly — `Framework.start(...)` initializes the logger, HTTP client, and any other
+ * subsystems in one call (and itself calls [init] under the hood).
  *
- * Example:
+ * Example (legacy):
  * ```
  * FrameworkConfig.init(
  *     apiBaseUrl = "https://api.myapp.com",
@@ -13,7 +15,7 @@ package com.tekmoon.data
  *     environment = "prod",
  *     debug = false,
  *     isPro = true,
- *     adEnabled = false
+ *     adEnabled = false,
  * )
  * ```
  */
@@ -39,13 +41,17 @@ object FrameworkConfig {
 
     private var initialized = false
 
+    /** True after [init] has been called at least once. */
+    val isInitialized: Boolean
+        get() = initialized
+
     fun init(
         apiBaseUrl: String,
         apiKey: String = "",
         environment: String = "dev",
         debug: Boolean = false,
         isPro: Boolean = false,
-        adEnabled: Boolean = !isPro
+        adEnabled: Boolean = !isPro,
     ) {
         this.apiBaseUrl = apiBaseUrl
         this.apiKey = apiKey
@@ -55,4 +61,28 @@ object FrameworkConfig {
         this.adEnabled = adEnabled
         this.initialized = true
     }
+
+    /**
+     * Returns an immutable view of the current configuration. Use this when a consumer wants to
+     * read the active config without depending on the singleton's mutability (e.g. inside
+     * `FrameworkState`).
+     */
+    fun snapshot(): Snapshot = Snapshot(
+        apiBaseUrl = apiBaseUrl,
+        apiKey = apiKey,
+        environment = environment,
+        debug = debug,
+        isPro = isPro,
+        adEnabled = adEnabled,
+    )
+
+    /** Immutable point-in-time copy of [FrameworkConfig]. */
+    data class Snapshot(
+        val apiBaseUrl: String,
+        val apiKey: String,
+        val environment: String,
+        val debug: Boolean,
+        val isPro: Boolean,
+        val adEnabled: Boolean,
+    )
 }

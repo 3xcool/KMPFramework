@@ -1,3 +1,7 @@
+@file:Suppress("LongMethod")
+// DsDialog ships two platform variants (Material and Web). Both bodies are
+// straight Compose layout trees whose length is structural, not behavioral.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.foundation.background
@@ -20,20 +24,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tekmoon.designsystem.DsTheme
+import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.DsSurface
 import com.tekmoon.designsystem.foundation.DsSurfaceRole
-import com.tekmoon.designsystem.image.DsIcon
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageDefaults
-import com.tekmoon.designsystem.image.DsImageLocal
 import com.tekmoon.designsystem.image.DsImageSource
-import com.tekmoon.designsystem.generated.resources.Res
-import com.tekmoon.designsystem.generated.resources.dog_man_image
 
 
 @Composable
@@ -59,18 +59,61 @@ fun DsDialogWeb(
     onDismissRequest: (() -> Unit)? = null,
     dismissOnOutsideClick: Boolean = true,
 
-    scrimColor: Color = DsTheme.colors.bgDark.copy(alpha = 0.6f)
+    scrimColor: Color = DsTheme.colors.bgDark.copy(alpha = 0.6f),
+
+    /** Stable identifier emitted with `"ds_dialog_confirmed"` when the confirm button fires. */
+    confirmAnalyticsId: String? = null,
+    /** Stable identifier emitted with `"ds_dialog_cancelled"` when the cancel button fires.
+     *  Ignored if [onCancel] is `null`. */
+    cancelAnalyticsId: String? = null,
+    /** Stable identifier emitted with `"ds_dialog_dismissed"` when the scrim is tapped
+     *  ([dismissOnOutsideClick] = true) or [onDismissRequest] otherwise fires. */
+    dismissAnalyticsId: String? = null,
+    /** Extra params merged into every event this dialog emits (alongside `id` + `title`). */
+    analyticsParams: Map<String, Any?> = emptyMap(),
 ) {
+    val analytics = LocalAnalytics.current
+    val trackedConfirm: () -> Unit = if (confirmAnalyticsId == null) onConfirm else {
+        {
+            analytics.track(
+                event = "ds_dialog_confirmed",
+                params = mapOf("id" to confirmAnalyticsId, "title" to title) + analyticsParams,
+            )
+            onConfirm()
+        }
+    }
+    val trackedCancel: (() -> Unit)? = onCancel?.let { raw ->
+        if (cancelAnalyticsId == null) raw else {
+            {
+                analytics.track(
+                    event = "ds_dialog_cancelled",
+                    params = mapOf("id" to cancelAnalyticsId, "title" to title) + analyticsParams,
+                )
+                raw()
+            }
+        }
+    }
+    val trackedDismiss: (() -> Unit)? = onDismissRequest?.let { raw ->
+        if (dismissAnalyticsId == null) raw else {
+            {
+                analytics.track(
+                    event = "ds_dialog_dismissed",
+                    params = mapOf("id" to dismissAnalyticsId, "title" to title) + analyticsParams,
+                )
+                raw()
+            }
+        }
+    }
     // Scrim + dialog container
     Box(
         modifier = rootModifier
             .background(scrimColor)
             .then(
-                if (dismissOnOutsideClick && onDismissRequest != null)
+                if (dismissOnOutsideClick && trackedDismiss != null)
                     Modifier.clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
-                    ) { onDismissRequest() }
+                    ) { trackedDismiss() }
                 else Modifier
             ),
         contentAlignment = Alignment.Center
@@ -127,11 +170,11 @@ fun DsDialogWeb(
                     // Actions
                     ButtonActionsAsWeb(
                         confirmText = confirmText,
-                        onConfirm = onConfirm,
+                        onConfirm = trackedConfirm,
                         cancelButtonVariant = cancelButtonVariant,
                         confirmationButtonVariant = confirmationButtonVariant,
                         cancelText = cancelText,
-                        onCancel = onCancel,
+                        onCancel = trackedCancel,
                     )
                 }
             }
@@ -194,18 +237,61 @@ fun DsDialogMaterial(
     onDismissRequest: (() -> Unit)? = null,
     dismissOnOutsideClick: Boolean = true,
 
-    scrimColor: Color = DsTheme.colors.bgDark.copy(alpha = 0.6f)
+    scrimColor: Color = DsTheme.colors.bgDark.copy(alpha = 0.6f),
+
+    /** Stable identifier emitted with `"ds_dialog_confirmed"` when the confirm button fires. */
+    confirmAnalyticsId: String? = null,
+    /** Stable identifier emitted with `"ds_dialog_cancelled"` when the cancel button fires.
+     *  Ignored if [onCancel] is `null`. */
+    cancelAnalyticsId: String? = null,
+    /** Stable identifier emitted with `"ds_dialog_dismissed"` when the scrim is tapped
+     *  ([dismissOnOutsideClick] = true) or [onDismissRequest] otherwise fires. */
+    dismissAnalyticsId: String? = null,
+    /** Extra params merged into every event this dialog emits (alongside `id` + `title`). */
+    analyticsParams: Map<String, Any?> = emptyMap(),
 ) {
+    val analytics = LocalAnalytics.current
+    val trackedConfirm: () -> Unit = if (confirmAnalyticsId == null) onConfirm else {
+        {
+            analytics.track(
+                event = "ds_dialog_confirmed",
+                params = mapOf("id" to confirmAnalyticsId, "title" to title) + analyticsParams,
+            )
+            onConfirm()
+        }
+    }
+    val trackedCancel: (() -> Unit)? = onCancel?.let { raw ->
+        if (cancelAnalyticsId == null) raw else {
+            {
+                analytics.track(
+                    event = "ds_dialog_cancelled",
+                    params = mapOf("id" to cancelAnalyticsId, "title" to title) + analyticsParams,
+                )
+                raw()
+            }
+        }
+    }
+    val trackedDismiss: (() -> Unit)? = onDismissRequest?.let { raw ->
+        if (dismissAnalyticsId == null) raw else {
+            {
+                analytics.track(
+                    event = "ds_dialog_dismissed",
+                    params = mapOf("id" to dismissAnalyticsId, "title" to title) + analyticsParams,
+                )
+                raw()
+            }
+        }
+    }
     // Scrim + dialog container
     Box(
         modifier = rootModifier
             .background(scrimColor)
             .then(
-                if (dismissOnOutsideClick && onDismissRequest != null)
+                if (dismissOnOutsideClick && trackedDismiss != null)
                     Modifier.clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
-                    ) { onDismissRequest() }
+                    ) { trackedDismiss() }
                 else Modifier
             ),
         contentAlignment = Alignment.Center
@@ -261,11 +347,11 @@ fun DsDialogMaterial(
                     // Actions
                     ButtonActionsAsMaterial(
                         confirmText = confirmText,
-                        onConfirm = onConfirm,
+                        onConfirm = trackedConfirm,
                         cancelButtonVariant = cancelButtonVariant,
                         confirmationButtonVariant = confirmationButtonVariant,
                         cancelText = cancelText,
-                        onCancel = onCancel,
+                        onCancel = trackedCancel,
                     )
                 }
             }

@@ -32,6 +32,7 @@ dependencies {
     compileOnly(libs.androidx.room.gradle.plugin)
     implementation(libs.buildkonfig.gradlePlugin)
     implementation(libs.buildkonfig.compiler)
+    compileOnly(libs.detekt.gradlePlugin)
 }
 
 java {
@@ -86,6 +87,10 @@ gradlePlugin {
             id = "com.tekmoon.convention.room"
             implementationClass = "RoomConventionPlugin"
         }
+        register("sqldelight") {
+            id = "com.tekmoon.convention.sqldelight"
+            implementationClass = "SqlDelightConventionPlugin"
+        }
         register("kmpAndroidTest") {
             id = "com.tekmoon.convention.kmp.android.test"
             implementationClass = "KmpAndroidTestConventionPlugin"
@@ -97,6 +102,10 @@ gradlePlugin {
         register("mavenPublish") {
             id = "com.tekmoon.convention.maven.publish"
             implementationClass = "MavenPublishConventionPlugin"
+        }
+        register("detekt") {
+            id = "com.tekmoon.convention.detekt"
+            implementationClass = "DetektConventionPlugin"
         }
     }
 }

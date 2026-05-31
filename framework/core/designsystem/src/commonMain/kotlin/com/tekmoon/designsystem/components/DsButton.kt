@@ -1,3 +1,9 @@
+@file:Suppress("CyclomaticComplexMethod")
+// resolveButtonStyle maps every (variant × state × theme) combination to its
+// style values. The cyclomatic complexity reflects the cartesian product of
+// design-token combinations — splitting into smaller helpers would not reduce
+// the actual branch count, just scatter it across more functions.
+
 package com.tekmoon.designsystem.components
 
 import androidx.compose.foundation.background
@@ -26,7 +32,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import com.tekmoon.designsystem.analytics.LocalAnalytics
 import com.tekmoon.designsystem.foundation.DsColors
+import com.tekmoon.designsystem.foundation.dsMinimumTouchTarget
 import com.tekmoon.designsystem.image.DsImage
 import com.tekmoon.designsystem.image.DsImageSource
 import com.tekmoon.designsystem.platform.hapticClick
@@ -107,7 +118,7 @@ private fun resolveButtonSizeSpec(
 
 // region ========= Definitions =========
 enum class DsButtonVariant { Solid, Outlined, Text }
-enum class DsButtonIntent { Primary, Secondary }
+enum class DsButtonIntent { Primary, Secondary, Destructive }
 enum class DsButtonLoadingMode { ReplaceContent, KeepText }
 enum class DsButtonIconPosition { Start, End }
 
@@ -146,51 +157,52 @@ private fun resolveButtonStyle(
 
     val background = overrides.background ?: when (variant) {
         DsButtonVariant.Solid -> when {
-            !enabled -> colors.bgLight
-            intent == DsButtonIntent.Primary -> colors.primary
-            intent == DsButtonIntent.Secondary -> colors.bgLight
-            else -> colors.bgLight // defensive fallback
+            !enabled                              -> colors.bgLight
+            intent == DsButtonIntent.Primary      -> colors.primary
+            intent == DsButtonIntent.Secondary    -> colors.bgLight
+            intent == DsButtonIntent.Destructive  -> colors.danger
+            else                                  -> colors.bgLight
         }
 
         DsButtonVariant.Outlined,
         DsButtonVariant.Text -> Color.Transparent
 
-        // defensive for future variants
         else -> Color.Transparent
     }
 
     val content = overrides.content ?: when (variant) {
         DsButtonVariant.Solid -> when {
-            !enabled -> colors.textMuted
-            intent == DsButtonIntent.Primary -> colors.onPrimary
-            intent == DsButtonIntent.Secondary -> colors.text
-            else -> colors.text
+            !enabled                              -> colors.textMuted
+            intent == DsButtonIntent.Primary      -> colors.onPrimary
+            intent == DsButtonIntent.Secondary    -> colors.text
+            intent == DsButtonIntent.Destructive  -> colors.onPrimary
+            else                                  -> colors.text
         }
 
         DsButtonVariant.Outlined,
         DsButtonVariant.Text -> when {
-            !enabled -> colors.textMuted
-            intent == DsButtonIntent.Primary -> colors.primary
-            intent == DsButtonIntent.Secondary -> colors.text
-            else -> colors.text // defensive fallback
+            !enabled                              -> colors.textMuted
+            intent == DsButtonIntent.Primary      -> colors.primary
+            intent == DsButtonIntent.Secondary    -> colors.text
+            intent == DsButtonIntent.Destructive  -> colors.danger
+            else                                  -> colors.text
         }
 
-        // defensive for future variants
         else -> colors.text
     }
 
     val border = overrides.border ?: when (variant) {
         DsButtonVariant.Outlined -> when {
-            !enabled -> colors.textMuted
-            intent == DsButtonIntent.Primary -> colors.primary
-            intent == DsButtonIntent.Secondary -> colors.text
-            else -> colors.textMuted // defensive fallback
+            !enabled                              -> colors.textMuted
+            intent == DsButtonIntent.Primary      -> colors.primary
+            intent == DsButtonIntent.Secondary    -> colors.text
+            intent == DsButtonIntent.Destructive  -> colors.danger
+            else                                  -> colors.textMuted
         }
 
         DsButtonVariant.Solid,
         DsButtonVariant.Text -> null
 
-        // defensive for future variants
         else -> null
     }
 
@@ -256,9 +268,19 @@ fun DsButton(
     backgroundColor: Color? = null,
     contentColor: Color? = null,
     borderColor: Color? = null,
+
+    /**
+     * Stable identifier emitted with the `"ds_button_clicked"` analytics event when this
+     * button is tapped. `null` (default) disables analytics for this instance — useful when
+     * the click handler itself already emits a more meaningful event.
+     */
+    analyticsId: String? = null,
+    /** Extra params merged into the analytics event payload alongside `id` + `text`. */
+    analyticsParams: Map<String, Any?> = emptyMap(),
 ) {
     val interaction = rememberButtonInteraction()
     val colors = DsTheme.colors
+    val analytics = LocalAnalytics.current
 
     val sizeSpec = resolveButtonSizeSpec(size)
 
@@ -272,12 +294,25 @@ fun DsButton(
 
     val style = applyInteractionOverlay(baseStyle, interaction, enabled)
 
+    val trackedClick: () -> Unit = if (analyticsId == null) onClick else {
+        {
+            analytics.track(
+                event = "ds_button_clicked",
+                params = mapOf(
+                    "id" to analyticsId,
+                    "text" to text,
+                ) + analyticsParams,
+            )
+            onClick()
+        }
+    }
+
     ButtonContainer(
         modifier = modifier,
         style = style,
         enabled = enabled && !loading,
         withHaptic = withHaptic,
-        onClick = onClick,
+        onClick = trackedClick,
         padding = sizeSpec.padding,
         minHeight = sizeSpec.minHeight
     ) {
@@ -314,6 +349,7 @@ private fun ButtonContainer(
 ) {
     Box(
         modifier
+            .dsMinimumTouchTarget(48.dp)
             .clip(DsTheme.shapes.lg)
             .background(style.background)
             .then(
@@ -334,6 +370,7 @@ private fun ButtonContainer(
                     it.clickable(enabled = enabled, onClick = onClick)
                 }
             }
+            .semantics { role = Role.Button }
             .padding(padding),
         contentAlignment = Alignment.Center
     ) {
